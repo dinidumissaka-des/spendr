@@ -91,7 +91,7 @@ export default function Home() {
 
   if (user === undefined) {
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
+      <main className="relative z-10 min-h-screen bg-background flex items-center justify-center">
         <span className="font-mono text-sm text-muted animate-pulse">Loading...</span>
       </main>
     );
@@ -99,7 +99,7 @@ export default function Home() {
 
   if (user === null) {
     return (
-      <main className="min-h-screen bg-background text-text">
+      <main className="relative z-10 min-h-screen bg-background text-text">
         <div className="max-w-sm mx-auto px-4 py-20">
           <Logo className="h-7 w-auto mx-auto mb-8" />
           <AuthForm />
@@ -109,7 +109,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-text">
+    <main className="relative z-10 min-h-screen bg-background text-text">
       <div className="max-w-2xl mx-auto px-4 py-8 flex flex-col gap-6">
 
         {/* Header */}
