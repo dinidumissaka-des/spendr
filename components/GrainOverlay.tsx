@@ -25,9 +25,9 @@ export default function GrainOverlay() {
         const img = ctx.createImageData(width, height);
         const d = img.data;
         for (let i = 0; i < d.length; i += 4) {
-          const v = (Math.random() * 160) | 0;
+          const v = (Math.random() * 255) | 0;
           d[i] = d[i + 1] = d[i + 2] = v;
-          d[i + 3] = (Math.random() * 60) | 0;
+          d[i + 3] = (Math.random() * 120) | 0;
         }
         ctx.putImageData(img, 0, 0);
       }
@@ -50,10 +50,10 @@ export default function GrainOverlay() {
         inset: 0,
         width: "100%",
         height: "100%",
-        zIndex: 0,
+        zIndex: 9999,
         pointerEvents: "none",
         mixBlendMode: "screen",
-        opacity: 0.55,
+        opacity: 0.08,
       }}
     />
   );
