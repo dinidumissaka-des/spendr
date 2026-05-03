@@ -9,7 +9,6 @@
   --border:     #2e2e3a;
   --ring:       #9FE870;
   --radius:     1rem;
-}
 
 @layer base {
   html {
