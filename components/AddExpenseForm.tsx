@@ -2,6 +2,9 @@
 
 import { useState, useRef, FormEvent } from "react";
 import { addExpense } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const PRESET_CATEGORIES = [
   "Food & Dining",
@@ -55,13 +58,7 @@ export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
       const time = `${h12}:${mins} ${ampm}`;
       const date = now.toISOString().split("T")[0];
 
-      await addExpense({
-        description: description.trim(),
-        category: effectiveCategory,
-        amount: parsed,
-        date,
-        time,
-      }, userId);
+      await addExpense({ description: description.trim(), category: effectiveCategory, amount: parsed, date, time }, userId);
 
       setDescription("");
       setCategory(PRESET_CATEGORIES[0]);
@@ -77,66 +74,55 @@ export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
     }
   }
 
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-surface rounded-xl border border-border p-5 flex flex-col gap-4"
-    >
-      <h2 className="font-serif text-lg text-text">Add Expense</h2>
+  const inputClass = "";
 
-      <div className="flex flex-col gap-1">
-        <label className="font-mono text-xs text-muted uppercase tracking-widest">
-          Description
-        </label>
-        <input
+  return (
+    <div className="bg-surface rounded-2xl border border-border p-6 flex flex-col gap-5">
+      <h2 className="font-sans font-semibold text-lg text-white">Add Expense</h2>
+
+      <div className="flex flex-col gap-2">
+        <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Description</Label>
+        <Input
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && amountRef.current?.focus()}
           placeholder="e.g. Lunch at Nando's"
-          className="bg-surface2 border border-border rounded-lg px-3 py-2.5 text-text text-sm placeholder:text-muted focus:outline-none focus:border-accent transition-colors"
+          className={inputClass}
         />
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label className="font-mono text-xs text-muted uppercase tracking-widest">
-          Category
-        </label>
+      <div className="flex flex-col gap-2">
+        <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Category</Label>
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="bg-surface2 border border-border rounded-lg px-3 py-2.5 text-text text-sm focus:outline-none focus:border-accent transition-colors appearance-none cursor-pointer"
+          className="bg-surface2 border border-border rounded-lg px-3 h-11 text-white text-base focus:outline-none focus:border-accent transition-colors appearance-none cursor-pointer w-full"
         >
           {PRESET_CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
+            <option key={c} value={c} className="bg-surface2">{c}</option>
           ))}
-          <option value="__custom__">Custom...</option>
+          <option value="__custom__" className="bg-surface2">Custom...</option>
         </select>
       </div>
 
       {isCustom && (
-        <div className="flex flex-col gap-1">
-          <label className="font-mono text-xs text-muted uppercase tracking-widest">
-            Custom Category
-          </label>
-          <input
+        <div className="flex flex-col gap-2">
+          <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Custom Category</Label>
+          <Input
             type="text"
             value={customCategory}
             onChange={(e) => setCustomCategory(e.target.value)}
             placeholder="Enter category name"
             autoFocus
-            className="bg-surface2 border border-border rounded-lg px-3 py-2.5 text-text text-sm placeholder:text-muted focus:outline-none focus:border-accent transition-colors"
+            className={inputClass}
           />
         </div>
       )}
 
-      <div className="flex flex-col gap-1">
-        <label className="font-mono text-xs text-muted uppercase tracking-widest">
-          Amount (AED)
-        </label>
-        <input
+      <div className="flex flex-col gap-2">
+        <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Amount (AED)</Label>
+        <Input
           ref={amountRef}
           type="number"
           value={amount}
@@ -145,25 +131,20 @@ export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
           placeholder="0.00"
           min="0.01"
           step="0.01"
-          className="bg-surface2 border border-border rounded-lg px-3 py-2.5 text-text text-sm placeholder:text-muted focus:outline-none focus:border-accent transition-colors"
+          className={inputClass}
         />
       </div>
 
-      {error && (
-        <p className="text-danger text-sm font-mono">{error}</p>
-      )}
+      {error && <p className="text-danger text-sm font-mono">{error}</p>}
+      {success && <p className="text-accent text-sm font-mono">Expense added!</p>}
 
-      {success && (
-        <p className="text-accent text-sm font-mono">Expense added!</p>
-      )}
-
-      <button
-        type="submit"
+      <Button
+        onClick={handleSubmit}
         disabled={submitting}
-        className="bg-accent text-background font-mono font-medium text-sm rounded-lg py-2.5 px-4 hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full"
       >
         {submitting ? "Adding..." : "Add Expense"}
-      </button>
-    </form>
+      </Button>
+    </div>
   );
 }

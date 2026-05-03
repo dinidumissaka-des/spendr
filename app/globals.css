@@ -3,18 +3,28 @@
 @tailwind utilities;
 
 :root {
-  --background: #0d0d0f;
-  --foreground: #f0f0f2;
+  --background: #101014;
+  --foreground: #ffffff;
+  --card:       #1c1c24;
+  --border:     #2e2e3a;
+  --ring:       #9FE870;
+  --radius:     1rem;
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: "DM Sans", sans-serif;
+@layer base {
+  html {
+    font-family: var(--font-manrope), Manrope, sans-serif;
+  }
+  *, *::before, *::after {
+    font-family: var(--font-manrope), Manrope, sans-serif;
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+  }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+  .text-balance { text-wrap: balance; }
 }

@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { LogOut } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { getExpensesByMonth, onAuthStateChange, signOut } from "@/lib/supabase";
 import type { Expense } from "@/types";
 import AddExpenseForm from "@/components/AddExpenseForm";
+import Logo from "@/components/Logo";
 import AuthForm from "@/components/AuthForm";
 import StatsBar from "@/components/StatsBar";
 import ExpenseList from "@/components/ExpenseList";
@@ -99,7 +101,7 @@ export default function Home() {
     return (
       <main className="min-h-screen bg-background text-text">
         <div className="max-w-sm mx-auto px-4 py-20">
-          <h1 className="font-serif text-3xl text-text italic text-center mb-8">Spendr</h1>
+          <Logo className="h-7 w-auto mx-auto mb-8" />
           <AuthForm />
         </div>
       </main>
@@ -112,32 +114,32 @@ export default function Home() {
 
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="font-serif text-3xl text-text italic">Spendr</h1>
+          <Logo className="h-7 w-auto" />
 
           <div className="flex items-center gap-3">
             {/* Month nav */}
             <button
               onClick={prevMonth}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-border text-muted hover:text-text hover:border-muted transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-muted hover:text-white hover:border-white transition-colors"
             >
               ‹
             </button>
-            <span className="font-mono text-sm text-text min-w-[72px] text-center">
+            <span className="font-sans text-sm text-white font-medium min-w-[72px] text-center">
               {MONTH_NAMES[selectedMonth.month - 1]} {selectedMonth.year}
             </span>
             <button
               onClick={nextMonth}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-border text-muted hover:text-text hover:border-muted transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-muted hover:text-white hover:border-white transition-colors"
             >
               ›
             </button>
 
-            {/* Sign out */}
             <button
               onClick={() => signOut()}
-              className="font-mono text-xs text-muted hover:text-danger transition-colors ml-1"
+              aria-label="Sign out"
+              className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-muted hover:text-danger hover:border-danger/50 transition-colors"
             >
-              Sign out
+              <LogOut size={14} />
             </button>
           </div>
         </div>
@@ -149,15 +151,15 @@ export default function Home() {
         <AddExpenseForm userId={user.id} onExpenseAdded={fetchExpenses} />
 
         {/* Filter tabs */}
-        <div className="flex gap-1 bg-surface rounded-xl p-1 border border-border">
+        <div className="flex gap-1 bg-surface rounded-xl p-1 border border-border shadow-sm">
           {filters.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => setFilter(key)}
               className={`flex-1 py-2 text-sm font-mono rounded-lg transition-colors ${
                 filter === key
-                  ? "bg-surface2 text-accent border border-border"
-                  : "text-muted hover:text-text"
+                  ? "bg-surface2 text-white font-semibold border border-border"
+                  : "text-muted hover:text-white"
               }`}
             >
               {label}
@@ -171,7 +173,7 @@ export default function Home() {
             <p className="text-danger font-mono text-sm">{fetchError}</p>
             <button
               onClick={fetchExpenses}
-              className="mt-3 text-xs font-mono text-muted underline hover:text-text"
+              className="mt-3 text-xs font-mono text-muted underline hover:text-white"
             >
               Retry
             </button>

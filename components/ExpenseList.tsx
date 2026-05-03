@@ -5,18 +5,18 @@ import { deleteExpense } from "@/lib/supabase";
 import type { Expense } from "@/types";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  "Food & Dining": "#c8f55a",
-  Transport: "#5af5c8",
-  Shopping: "#f5c85a",
-  Entertainment: "#f55adb",
-  Health: "#5a9cf5",
-  Utilities: "#f5885a",
-  Travel: "#a55af5",
-  Education: "#5af5a8",
+  "Food & Dining": "#9FE870",
+  Transport:       "#00B67A",
+  Shopping:        "#f5c85a",
+  Entertainment:   "#f55adb",
+  Health:          "#5a9cf5",
+  Utilities:       "#f5885a",
+  Travel:          "#a55af5",
+  Education:       "#5af5a8",
 };
 
 function categoryColor(cat: string) {
-  return CATEGORY_COLORS[cat] ?? "#8888aa";
+  return CATEGORY_COLORS[cat] ?? "#717a68";
 }
 
 function formatAED(amount: number) {
@@ -59,7 +59,7 @@ export default function ExpenseList({ expenses, onDeleted }: Props) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <span className="text-4xl mb-3">🪙</span>
-        <p className="font-serif text-lg text-muted">No expenses yet</p>
+        <p className="font-sans font-semibold text-lg text-muted">No expenses yet</p>
         <p className="font-sans text-sm text-muted mt-1">Add one above to get started.</p>
       </div>
     );
@@ -92,11 +92,11 @@ export default function ExpenseList({ expenses, onDeleted }: Props) {
             </div>
 
             {/* Expense rows */}
-            <div className="bg-surface rounded-xl border border-border overflow-hidden divide-y divide-border">
+            <div className="bg-surface rounded-xl border border-border overflow-hidden divide-y divide-border shadow-sm">
               {dayExpenses.map((expense) => (
                 <div
                   key={expense.id}
-                  className="group flex items-center gap-3 px-4 py-3 hover:bg-surface2 transition-colors"
+                  className="group flex items-center gap-3 px-4 py-3.5 hover:bg-surface2 transition-colors"
                 >
                   {/* Category dot */}
                   <span
@@ -128,7 +128,7 @@ export default function ExpenseList({ expenses, onDeleted }: Props) {
                   )}
 
                   {/* Amount */}
-                  <span className="font-mono text-sm text-text flex-shrink-0">
+                  <span className="font-mono text-sm text-white flex-shrink-0">
                     {formatAED(Number(expense.amount))}
                   </span>
 

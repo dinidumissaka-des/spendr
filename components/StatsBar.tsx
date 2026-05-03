@@ -31,21 +31,9 @@ export default function StatsBar({ expenses, selectedMonth }: Props) {
     .reduce((sum, e) => sum + Number(e.amount), 0);
 
   const stats = [
-    {
-      label: isCurrentMonth ? "This Month" : "Month Total",
-      value: formatAED(monthTotal),
-      color: "#c8f55a",
-    },
-    {
-      label: "Today",
-      value: formatAED(todayTotal),
-      color: "#5af5c8",
-    },
-    {
-      label: "Transactions",
-      value: String(expenses.length),
-      color: "#f5c85a",
-    },
+    { label: isCurrentMonth ? "This Month" : "Month Total", value: formatAED(monthTotal), bar: "#9FE870", color: "#ffffff" },
+    { label: "Today",        value: formatAED(todayTotal),  bar: "#00B67A", color: "#ffffff" },
+    { label: "Transactions", value: String(expenses.length), bar: "#6b6b80", color: "#ffffff" },
   ];
 
   return (
@@ -54,15 +42,11 @@ export default function StatsBar({ expenses, selectedMonth }: Props) {
         <div
           key={stat.label}
           className="bg-surface rounded-xl border border-border pt-3 pb-4 px-4 flex flex-col gap-1"
-          style={{ borderTop: `2px solid ${stat.color}` }}
         >
-          <span className="font-mono text-xs text-muted uppercase tracking-widest">
+          <span className="font-sans text-xs text-muted uppercase tracking-widest font-semibold">
             {stat.label}
           </span>
-          <span
-            className="font-serif text-xl sm:text-2xl text-text"
-            style={{ color: stat.color }}
-          >
+          <span className="font-mono text-xl sm:text-2xl font-bold" style={{ color: stat.color }}>
             {stat.value}
           </span>
         </div>
