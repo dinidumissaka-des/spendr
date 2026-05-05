@@ -1,15 +1,17 @@
 "use client";
 
 import { useState, useRef, FormEvent } from "react";
-import { Plus, Loader2, CalendarDays } from "lucide-react";
+import { Plus, Loader2, CalendarDays, ChevronDown } from "lucide-react";
 import { addExpense } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import DatePickerDrawer from "@/components/DatePickerDrawer";
+import BottomDrawer from "@/components/BottomDrawer";
 
 const PRESET_CATEGORIES = [
   "Food & Dining",
+  "Grocery",
   "Transport",
   "Shopping",
   "Entertainment",
@@ -35,6 +37,7 @@ export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
   const [error, setError] = useState<string | null>(null);
   const amountRef = useRef<HTMLInputElement>(null);
   const [showDateDrawer, setShowDateDrawer] = useState(false);
+  const [showCategoryDrawer, setShowCategoryDrawer] = useState(false);
 
   const isCustom = category === "__custom__";
   const effectiveCategory = isCustom ? customCategory.trim() : category;
@@ -95,16 +98,41 @@ export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
 
       <div className="flex flex-col gap-2">
         <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Category</Label>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="bg-surface2 border border-border rounded-xl px-3 h-11 text-white text-sm focus:outline-none focus:border-accent transition-colors appearance-none cursor-pointer w-full"
+        <button
+          type="button"
+          onClick={() => setShowCategoryDrawer(true)}
+          className="h-11 w-full rounded-xl border border-border bg-surface2 px-4 text-sm text-white flex items-center justify-between"
+        >
+          <span>{isCustom ? (customCategory.trim() || "Custom") : category}</span>
+          <ChevronDown size={14} className="text-muted" />
+        </button>
+        <BottomDrawer
+          open={showCategoryDrawer}
+          onClose={() => setShowCategoryDrawer(false)}
+          title="Select Category"
         >
           {PRESET_CATEGORIES.map((c) => (
-            <option key={c} value={c} className="bg-surface2">{c}</option>
+            <button
+              key={c}
+              onClick={() => { setCategory(c); setShowCategoryDrawer(false); }}
+              className={`w-full flex items-center justify-between px-4 py-3.5 text-sm transition-colors border-b border-border/50 last:border-0 ${
+                category === c && !isCustom
+                  ? "text-accent bg-accent/10"
+                  : "text-white hover:bg-surface"
+              }`}
+            >
+              <span className="font-sans">{c}</span>
+            </button>
           ))}
-          <option value="__custom__" className="bg-surface2">Custom...</option>
-        </select>
+          <button
+            onClick={() => { setCategory("__custom__"); setShowCategoryDrawer(false); }}
+            className={`w-full flex items-center justify-between px-4 py-3.5 text-sm transition-colors ${
+              isCustom ? "text-accent bg-accent/10" : "text-white hover:bg-surface"
+            }`}
+          >
+            <span className="font-sans">Custom...</span>
+          </button>
+        </BottomDrawer>
       </div>
 
       {isCustom && (
