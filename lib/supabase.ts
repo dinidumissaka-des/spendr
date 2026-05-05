@@ -67,3 +67,8 @@ export async function deleteExpense(id: string): Promise<void> {
   const { error } = await getClient().from('expenses').delete().eq('id', id);
   if (error) throw error;
 }
+
+export async function updateExpense(id: string, data: Partial<Omit<Expense, 'id' | 'created_at'>>): Promise<void> {
+  const { error } = await getClient().from('expenses').update(data).eq('id', id);
+  if (error) throw error;
+}

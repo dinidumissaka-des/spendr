@@ -181,7 +181,7 @@ export default function Home() {
         ) : loading ? (
           <LoadingSkeleton />
         ) : (
-          <ExpenseList expenses={filteredExpenses} onDeleted={fetchExpenses} />
+          <ExpenseList expenses={filteredExpenses} onDeleted={fetchExpenses} onUpdated={fetchExpenses} />
         )}
       </div>
     </main>
