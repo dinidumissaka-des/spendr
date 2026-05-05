@@ -33,7 +33,7 @@ export default function StatsBar({ expenses, selectedMonth, currency }: Props) {
   return (
     <div className="grid grid-cols-2 gap-2">
       {stats.map((stat) => (
-        <div key={stat.label} className="bg-surface rounded-xl border border-border pt-3 pb-4 px-3 sm:px-4 flex flex-col gap-1">
+        <div key={stat.label} className="bg-surface rounded-xl border border-border pt-5 pb-6 px-5 flex flex-col gap-2">
           <span className="font-sans text-xs text-muted uppercase tracking-widest font-semibold truncate leading-none">
             {stat.label}
           </span>
