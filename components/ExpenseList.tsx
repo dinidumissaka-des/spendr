@@ -45,6 +45,8 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
   const [saving, setSaving] = useState(false);
 
   const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const editPanelRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const deletePanelRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const touchStartX = useRef(0);
   const touchActiveId = useRef<string | null>(null);
   const touchDx = useRef(0);
@@ -96,11 +98,20 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
     }
   }
 
+  function resetPanels(id: string) {
+    const ep = editPanelRefs.current[id];
+    const dp = deletePanelRefs.current[id];
+    if (ep) ep.style.opacity = "0";
+    if (dp) dp.style.opacity = "0";
+  }
+
   function snapBack(id: string) {
     const el = rowRefs.current[id];
     if (!el) return;
-    el.style.transition = "transform 220ms ease";
+    // Spring curve for a satisfying bounce
+    el.style.transition = "transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1)";
     el.style.transform = "translateX(0)";
+    resetPanels(id);
     touchActiveId.current = null;
     touchDx.current = 0;
   }
@@ -120,19 +131,48 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
     touchDx.current = clamped;
     const el = rowRefs.current[id];
     if (el) el.style.transform = `translateX(${clamped}px)`;
+
+    // Fade in the relevant action panel as swipe progresses
+    const progress = Math.min(Math.abs(clamped) / SWIPE_THRESHOLD, 1);
+    const ep = editPanelRefs.current[id];
+    const dp = deletePanelRefs.current[id];
+    if (clamped > 0) {
+      if (ep) ep.style.opacity = String(progress);
+      if (dp) dp.style.opacity = "0";
+    } else {
+      if (dp) dp.style.opacity = String(progress);
+      if (ep) ep.style.opacity = "0";
+    }
   }
 
   function onTouchEnd(id: string, expense: Expense) {
     const dx = touchDx.current;
+    const el = rowRefs.current[id];
+
     if (dx > SWIPE_THRESHOLD) {
-      snapBack(id);
-      startEdit(expense);
+      // Slide off right then open edit
+      if (el) {
+        el.style.transition = "transform 200ms ease-in";
+        el.style.transform = "translateX(110%)";
+      }
+      setTimeout(() => {
+        if (el) { el.style.transition = "none"; el.style.transform = "translateX(0)"; }
+        resetPanels(id);
+        startEdit(expense);
+      }, 200);
     } else if (dx < -SWIPE_THRESHOLD) {
-      snapBack(id);
-      handleDelete(id);
+      // Slide off left then delete
+      if (el) {
+        el.style.transition = "transform 200ms ease-in";
+        el.style.transform = "translateX(-110%)";
+      }
+      resetPanels(id);
+      setTimeout(() => handleDelete(id), 200);
     } else {
       snapBack(id);
     }
+    touchActiveId.current = null;
+    touchDx.current = 0;
   }
 
   if (expenses.length === 0) {
@@ -232,12 +272,20 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                 return (
                   <div key={expense.id} className="relative overflow-hidden">
                     {/* Edit action — revealed on right swipe */}
-                    <div className="absolute inset-0 flex items-center gap-2 pl-5 bg-accent/15">
+                    <div
+                      ref={(el) => { editPanelRefs.current[expense.id] = el; }}
+                      style={{ opacity: 0 }}
+                      className="absolute inset-0 flex items-center gap-2 pl-5 bg-accent/15"
+                    >
                       <Pencil size={15} className="text-accent" />
                       <span className="text-xs font-semibold text-accent">Edit</span>
                     </div>
                     {/* Delete action — revealed on left swipe */}
-                    <div className="absolute inset-0 flex items-center justify-end gap-2 pr-5 bg-danger/15">
+                    <div
+                      ref={(el) => { deletePanelRefs.current[expense.id] = el; }}
+                      style={{ opacity: 0 }}
+                      className="absolute inset-0 flex items-center justify-end gap-2 pr-5 bg-danger/15"
+                    >
                       <span className="text-xs font-semibold text-danger">Delete</span>
                       <Trash2 size={15} className="text-danger" />
                     </div>

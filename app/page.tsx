@@ -236,7 +236,7 @@ export default function Home() {
         </div>
 
         {/* Expense list / loading / error */}
-        <div className="mt-4">
+        <div key={filter} className="mt-4 animate-fade-slide-in">
         {fetchError ? (
           <div className="bg-surface rounded-xl border border-danger/40 p-5 text-center">
             <p className="text-danger font-mono text-sm">{fetchError}</p>

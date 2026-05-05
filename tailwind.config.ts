@@ -47,6 +47,15 @@ const config: Config = {
         "3xl":   "3rem",
         full:    "9999px",
       },
+      keyframes: {
+        fadeSlideIn: {
+          "0%":   { opacity: "0", transform: "translateY(8px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        "fade-slide-in": "fadeSlideIn 220ms ease-out both",
+      },
     },
   },
   plugins: [],
