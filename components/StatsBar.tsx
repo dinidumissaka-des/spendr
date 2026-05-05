@@ -37,7 +37,7 @@ export default function StatsBar({ expenses, selectedMonth, currency }: Props) {
           <span className="font-sans text-xs text-muted uppercase tracking-widest font-semibold truncate leading-none">
             {stat.label}
           </span>
-          <span className="font-mono text-lg sm:text-2xl font-bold text-white leading-tight">
+          <span className="font-mono text-2xl sm:text-3xl font-bold text-white leading-tight">
             {stat.value}
           </span>
         </div>
