@@ -128,7 +128,7 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
           <button
             type="button"
             onClick={() => setShowCategoryDrawer(true)}
-            className="h-11 w-full rounded-xl border border-border bg-surface2 px-4 text-sm text-white flex items-center justify-between"
+            className="h-[52px] w-full rounded-xl border border-border bg-surface2 px-4 text-base text-white flex items-center justify-between"
           >
             <span className="flex items-center gap-2 min-w-0">
               {!isCustom && (
@@ -147,7 +147,7 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
           <button
             type="button"
             onClick={() => setShowDateDrawer(true)}
-            className="h-11 rounded-xl border border-border bg-surface2 px-4 text-sm text-white flex items-center gap-2 whitespace-nowrap"
+            className="h-[52px] rounded-xl border border-border bg-surface2 px-4 text-base text-white flex items-center gap-2 whitespace-nowrap"
           >
             <span>{date}</span>
             <CalendarDays size={15} className="text-muted" />

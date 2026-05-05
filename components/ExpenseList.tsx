@@ -219,7 +219,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                     <div key={expense.id} className="px-4 py-3 flex flex-col gap-3 bg-surface2">
                       <div className="flex gap-2">
                         <input
-                          className="flex-1 bg-surface border border-border rounded-lg px-3 h-9 text-sm text-white placeholder:text-muted outline-none focus:border-accent"
+                          className="flex-1 bg-surface border border-border rounded-lg px-3 h-9 text-base text-white placeholder:text-muted outline-none focus:border-accent"
                           value={editState.description}
                           onChange={(e) => setEditState({ ...editState, description: e.target.value })}
                           placeholder="Description"
@@ -227,7 +227,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                         />
                         <input
                           type="number"
-                          className="w-28 bg-surface border border-border rounded-lg px-3 h-9 text-sm text-white outline-none focus:border-accent"
+                          className="w-28 bg-surface border border-border rounded-lg px-3 h-9 text-base text-white outline-none focus:border-accent"
                           value={editState.amount}
                           onChange={(e) => setEditState({ ...editState, amount: e.target.value })}
                           placeholder="Amount"
@@ -237,7 +237,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                       </div>
                       <div className="flex gap-2">
                         <select
-                          className="flex-1 bg-surface border border-border rounded-lg px-3 h-9 text-sm text-white outline-none focus:border-accent appearance-none cursor-pointer"
+                          className="flex-1 bg-surface border border-border rounded-lg px-3 h-9 text-base text-white outline-none focus:border-accent appearance-none cursor-pointer"
                           value={editState.category}
                           onChange={(e) => setEditState({ ...editState, category: e.target.value })}
                         >
