@@ -33,6 +33,7 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
   const [category, setCategory] = useState(PRESET_CATEGORIES[0]);
   const [customCategory, setCustomCategory] = useState("");
   const [amount, setAmount] = useState("");
+  const [displayAmount, setDisplayAmount] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -40,6 +41,15 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
   const amountRef = useRef<HTMLInputElement>(null);
   const [showDateDrawer, setShowDateDrawer] = useState(false);
   const [showCategoryDrawer, setShowCategoryDrawer] = useState(false);
+
+  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const raw = e.target.value.replace(/,/g, "");
+    if (raw !== "" && !/^\d*\.?\d*$/.test(raw)) return;
+    setAmount(raw);
+    const parts = raw.split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    setDisplayAmount(parts.join("."));
+  }
 
   const isCustom = category === "__custom__";
   const effectiveCategory = isCustom ? customCategory.trim() : category;
@@ -72,6 +82,7 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
       setCategory(PRESET_CATEGORIES[0]);
       setCustomCategory("");
       setAmount("");
+      setDisplayAmount("");
       setDate(new Date().toISOString().split("T")[0]);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2000);
@@ -92,15 +103,13 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
         <span className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">{currency}</span>
         <input
           ref={amountRef}
-          type="number"
+          type="text"
           inputMode="decimal"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          value={displayAmount}
+          onChange={handleAmountChange}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           placeholder="0"
-          min="0.01"
-          step="0.01"
-          className="w-full bg-transparent text-right text-6xl font-bold text-white placeholder:text-muted/40 outline-none border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          className="w-full bg-transparent text-right text-6xl font-bold text-white placeholder:text-muted/40 outline-none border-none"
         />
         <div className="h-px w-16 bg-border mt-1" />
       </div>
