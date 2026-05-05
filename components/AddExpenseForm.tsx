@@ -88,7 +88,7 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
       <h2 className="font-sans font-semibold text-lg text-white">Add Expense</h2>
 
       {/* Hero amount input */}
-      <div className="flex flex-col items-center gap-1 py-4">
+      <div className="flex flex-col items-end gap-1 py-4">
         <span className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">{currency}</span>
         <input
           ref={amountRef}
@@ -100,7 +100,7 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
           placeholder="0"
           min="0.01"
           step="0.01"
-          className="w-full bg-transparent text-center text-6xl font-bold text-white placeholder:text-muted/40 outline-none border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          className="w-full bg-transparent text-right text-6xl font-bold text-white placeholder:text-muted/40 outline-none border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
         <div className="h-px w-16 bg-border mt-1" />
       </div>
