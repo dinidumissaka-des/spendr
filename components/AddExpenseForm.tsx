@@ -96,8 +96,6 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
 
   return (
     <div className="bg-surface rounded-2xl border border-border p-6 flex flex-col gap-5">
-      <h2 className="font-sans font-semibold text-lg text-white">Add Expense</h2>
-
       {/* Hero amount input */}
       <div className="flex flex-col items-end gap-1 py-4">
         <span className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">{currency}</span>
