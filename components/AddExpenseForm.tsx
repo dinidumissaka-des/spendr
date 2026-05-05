@@ -24,10 +24,11 @@ const PRESET_CATEGORIES = [
 
 interface Props {
   userId: string;
+  currency: string;
   onExpenseAdded: () => void;
 }
 
-export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
+export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Props) {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState(PRESET_CATEGORIES[0]);
   const [customCategory, setCustomCategory] = useState("");
@@ -86,6 +87,25 @@ export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
     <div className="bg-surface rounded-2xl border border-border p-6 flex flex-col gap-5">
       <h2 className="font-sans font-semibold text-lg text-white">Add Expense</h2>
 
+      {/* Hero amount input */}
+      <div className="flex flex-col items-center gap-1 py-4">
+        <span className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">{currency}</span>
+        <input
+          ref={amountRef}
+          type="number"
+          inputMode="decimal"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+          placeholder="0"
+          min="0.01"
+          step="0.01"
+          className="w-full bg-transparent text-center text-6xl font-bold text-white placeholder:text-muted/40 outline-none border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        />
+        <div className="h-px w-16 bg-border mt-1" />
+      </div>
+
+      {/* Description */}
       <div className="flex flex-col gap-2">
         <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Description</Label>
         <Input
@@ -97,6 +117,7 @@ export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
         />
       </div>
 
+      {/* Category */}
       <div className="flex flex-col gap-2">
         <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Category</Label>
         <button
@@ -164,40 +185,23 @@ export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
         </div>
       )}
 
-      <div className="flex gap-4">
-        <div className="flex flex-col gap-2 flex-1">
-          <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Amount (AED)</Label>
-          <Input
-            ref={amountRef}
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-            placeholder="0.00"
-            min="0.01"
-            step="0.01"
-          />
-        </div>
-
-        <div className="flex flex-col gap-2 flex-1">
-          <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Date</Label>
-          <>
-            <button
-              type="button"
-              onClick={() => setShowDateDrawer(true)}
-              className="h-11 w-full rounded-xl border border-border bg-surface2 px-4 text-sm text-white flex items-center justify-between"
-            >
-              <span>{date}</span>
-              <CalendarDays size={16} className="text-muted" />
-            </button>
-            <DatePickerDrawer
-              open={showDateDrawer}
-              onClose={() => setShowDateDrawer(false)}
-              value={date}
-              onChange={setDate}
-            />
-          </>
-        </div>
+      {/* Date */}
+      <div className="flex flex-col gap-2">
+        <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Date</Label>
+        <button
+          type="button"
+          onClick={() => setShowDateDrawer(true)}
+          className="h-11 w-full rounded-xl border border-border bg-surface2 px-4 text-sm text-white flex items-center justify-between"
+        >
+          <span>{date}</span>
+          <CalendarDays size={16} className="text-muted" />
+        </button>
+        <DatePickerDrawer
+          open={showDateDrawer}
+          onClose={() => setShowDateDrawer(false)}
+          value={date}
+          onChange={setDate}
+        />
       </div>
 
       {error && <p className="text-danger text-sm">{error}</p>}

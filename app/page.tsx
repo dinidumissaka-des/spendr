@@ -216,7 +216,7 @@ export default function Home() {
         <StatsBar expenses={expenses} selectedMonth={selectedMonth} currency={currency} />
 
         {/* Add form */}
-        <AddExpenseForm userId={user.id} onExpenseAdded={fetchExpenses} />
+        <AddExpenseForm userId={user.id} currency={currency} onExpenseAdded={fetchExpenses} />
 
         {/* Filter tabs */}
         <div className="flex gap-1 bg-surface rounded-xl p-1 border border-border shadow-sm">
