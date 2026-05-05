@@ -40,9 +40,7 @@ export default function StatsBar({ expenses, selectedMonth, currency }: Props) {
           <div
             key={stat.label}
             className={`rounded-xl border pt-3 pb-4 px-3 sm:px-4 flex flex-col gap-2 ${
-              stat.hero
-                ? "bg-surface border-accent/30 shadow-[0_0_12px_rgba(159,232,112,0.07)]"
-                : "bg-surface border-border"
+              "bg-surface border-border"
             }`}
           >
             <div className="flex items-center justify-between">
