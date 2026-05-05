@@ -98,7 +98,7 @@ export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="bg-surface2 border border-border rounded-xl px-3 h-11 text-white text-base focus:outline-none focus:border-accent transition-colors appearance-none cursor-pointer w-full"
+          className="bg-surface2 border border-border rounded-xl px-3 h-11 text-white text-sm focus:outline-none focus:border-accent transition-colors appearance-none cursor-pointer w-full"
         >
           {PRESET_CATEGORIES.map((c) => (
             <option key={c} value={c} className="bg-surface2">{c}</option>
@@ -141,7 +141,7 @@ export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
             <button
               type="button"
               onClick={() => setShowDateDrawer(true)}
-              className="h-11 w-full rounded-xl border border-border bg-surface2 px-4 text-base text-white flex items-center justify-between"
+              className="h-11 w-full rounded-xl border border-border bg-surface2 px-4 text-sm text-white flex items-center justify-between"
             >
               <span>{date}</span>
               <CalendarDays size={16} className="text-muted" />

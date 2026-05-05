@@ -231,7 +231,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                     <button
                       onClick={() => startEdit(expense)}
                       aria-label="Edit expense"
-                      className="opacity-0 group-hover:opacity-100 flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-white transition-all"
+                      className="opacity-25 hover:opacity-100 group-hover:opacity-100 flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-white transition-all"
                     >
                       <Pencil size={13} />
                     </button>
@@ -241,7 +241,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                       onClick={() => handleDelete(expense.id)}
                       disabled={deletingId === expense.id}
                       aria-label="Delete expense"
-                      className="opacity-0 group-hover:opacity-100 flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-danger disabled:opacity-30 transition-all"
+                      className="opacity-25 hover:opacity-100 group-hover:opacity-100 flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-danger disabled:opacity-30 transition-all"
                     >
                       {deletingId === expense.id ? <span className="text-sm">…</span> : <Trash2 size={13} />}
                     </button>
