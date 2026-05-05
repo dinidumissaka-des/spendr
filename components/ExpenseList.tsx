@@ -319,7 +319,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                       )}
 
                       <span className="font-mono text-sm text-white flex-shrink-0">
-                        {currency} {formatAmount(Number(expense.amount), currency)}
+                        {formatAmount(Number(expense.amount), currency)}
                       </span>
 
                       <button
