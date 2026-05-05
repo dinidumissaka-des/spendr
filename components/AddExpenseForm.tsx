@@ -5,7 +5,6 @@ import { Plus, Loader2, CalendarDays, ChevronDown, Pencil } from "lucide-react";
 import { addExpense } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import DatePickerDrawer from "@/components/DatePickerDrawer";
 import BottomDrawer from "@/components/BottomDrawer";
 import { CATEGORY_COLORS } from "@/lib/categories";
@@ -114,7 +113,6 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
 
       {/* Description */}
       <div className="flex flex-col gap-2">
-        <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Description</Label>
         <Input
           type="text"
           value={description}
@@ -127,7 +125,6 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
       {/* Category + Date row */}
       <div className="flex gap-3">
         <div className="flex flex-col gap-2 flex-1">
-          <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Category</Label>
           <button
             type="button"
             onClick={() => setShowCategoryDrawer(true)}
@@ -147,7 +144,6 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
         </div>
 
         <div className="flex flex-col gap-2 flex-shrink-0">
-          <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Date</Label>
           <button
             type="button"
             onClick={() => setShowDateDrawer(true)}
@@ -203,7 +199,6 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
 
       {isCustom && (
         <div className="flex flex-col gap-2">
-          <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Custom Category</Label>
           <Input
             type="text"
             value={customCategory}
