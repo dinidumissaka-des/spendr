@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, FormEvent } from "react";
-import { Plus, Loader2, CalendarDays, ChevronDown, Pencil } from "lucide-react";
+import { Plus, Loader2, CalendarDays, ChevronDown } from "lucide-react";
 import { addExpense } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -160,34 +160,33 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
         onClose={() => setShowCategoryDrawer(false)}
         title="Select Category"
       >
-        {PRESET_CATEGORIES.map((c) => (
+        <div className="flex flex-wrap gap-2 px-4 py-5">
+          {PRESET_CATEGORIES.map((c) => {
+            const selected = category === c && !isCustom;
+            const color = CATEGORY_COLORS[c] ?? "#717a68";
+            return (
+              <button
+                key={c}
+                onClick={() => { setCategory(c); setShowCategoryDrawer(false); }}
+                className="px-4 py-2 rounded-full text-sm font-medium transition-all"
+                style={{
+                  backgroundColor: selected ? color : `${color}22`,
+                  color: selected ? "#163300" : color,
+                }}
+              >
+                {c}
+              </button>
+            );
+          })}
           <button
-            key={c}
-            onClick={() => { setCategory(c); setShowCategoryDrawer(false); }}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm transition-colors border-b border-border/50 last:border-0 ${
-              category === c && !isCustom
-                ? "text-accent bg-accent/10"
-                : "text-white hover:bg-surface"
+            onClick={() => { setCategory("__custom__"); setShowCategoryDrawer(false); }}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
+              isCustom ? "bg-white text-background border-white" : "border-border text-muted"
             }`}
           >
-            <span
-              className="w-3.5 h-3.5 rounded-full flex-shrink-0"
-              style={{ backgroundColor: CATEGORY_COLORS[c] ?? "#717a68" }}
-            />
-            <span className="font-sans">{c}</span>
+            Custom...
           </button>
-        ))}
-        <button
-          onClick={() => { setCategory("__custom__"); setShowCategoryDrawer(false); }}
-          className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm transition-colors ${
-            isCustom ? "text-accent bg-accent/10" : "text-white hover:bg-surface"
-          }`}
-        >
-          <span className="w-3.5 h-3.5 rounded-full flex-shrink-0 flex items-center justify-center border border-border">
-            <Pencil size={8} className="text-muted" />
-          </span>
-          <span className="font-sans">Custom...</span>
-        </button>
+        </div>
       </BottomDrawer>
 
       <DatePickerDrawer
