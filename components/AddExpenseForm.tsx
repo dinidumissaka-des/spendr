@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useRef, FormEvent } from "react";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, CalendarDays } from "lucide-react";
 import { addExpense } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import DatePickerDrawer from "@/components/DatePickerDrawer";
 
 const PRESET_CATEGORIES = [
   "Food & Dining",
@@ -33,6 +34,7 @@ export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const amountRef = useRef<HTMLInputElement>(null);
+  const [showDateDrawer, setShowDateDrawer] = useState(false);
 
   const isCustom = category === "__custom__";
   const effectiveCategory = isCustom ? customCategory.trim() : category;
@@ -135,12 +137,22 @@ export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
 
         <div className="flex flex-col gap-2 flex-1">
           <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Date</Label>
-          <Input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="[color-scheme:dark]"
-          />
+          <>
+            <button
+              type="button"
+              onClick={() => setShowDateDrawer(true)}
+              className="h-11 w-full rounded-xl border border-border bg-surface2 px-4 text-base text-white flex items-center justify-between"
+            >
+              <span>{date}</span>
+              <CalendarDays size={16} className="text-muted" />
+            </button>
+            <DatePickerDrawer
+              open={showDateDrawer}
+              onClose={() => setShowDateDrawer(false)}
+              value={date}
+              onChange={setDate}
+            />
+          </>
         </div>
       </div>
 

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Trash2, Pencil, Check, X } from "lucide-react";
 import { deleteExpense, updateExpense } from "@/lib/supabase";
+import { formatAmount } from "@/lib/currencies";
 import type { Expense } from "@/types";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -22,12 +23,6 @@ function categoryColor(cat: string) {
   return CATEGORY_COLORS[cat] ?? "#717a68";
 }
 
-function formatAED(amount: number) {
-  return `AED ${Number(amount).toLocaleString("en-AE", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
 
 function formatDateLabel(dateStr: string) {
   const today = new Date().toISOString().split("T")[0];
@@ -42,6 +37,7 @@ interface Props {
   expenses: Expense[];
   onDeleted: () => void;
   onUpdated: () => void;
+  currency: string;
 }
 
 interface EditState {
@@ -51,7 +47,7 @@ interface EditState {
   date: string;
 }
 
-export default function ExpenseList({ expenses, onDeleted, onUpdated }: Props) {
+export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editState, setEditState] = useState<EditState | null>(null);
@@ -135,7 +131,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated }: Props) {
                 {formatDateLabel(date)}
               </span>
               <span className="font-mono text-xs text-muted">
-                {formatAED(dayTotal)}
+                {currency} {formatAmount(dayTotal, currency)}
               </span>
             </div>
 
@@ -228,7 +224,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated }: Props) {
                     )}
 
                     <span className="font-mono text-sm text-white flex-shrink-0">
-                      {formatAED(Number(expense.amount))}
+                      {currency} {formatAmount(Number(expense.amount), currency)}
                     </span>
 
                     {/* Edit */}

@@ -1,15 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { LogOut } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { LogOut, ChevronDown } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { getExpensesByMonth, onAuthStateChange, signOut } from "@/lib/supabase";
 import type { Expense } from "@/types";
+import { CURRENCIES, DEFAULT_CURRENCY } from "@/lib/currencies";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import AddExpenseForm from "@/components/AddExpenseForm";
 import Logo from "@/components/Logo";
 import AuthForm from "@/components/AuthForm";
 import StatsBar from "@/components/StatsBar";
 import ExpenseList from "@/components/ExpenseList";
+import BottomDrawer from "@/components/BottomDrawer";
 
 type Filter = "all" | "today" | "week";
 
@@ -20,8 +23,8 @@ const MONTH_NAMES = [
 
 function startOfWeekISO() {
   const d = new Date();
-  const day = d.getDay(); // 0 = Sun
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
   return new Date(d.setDate(diff)).toISOString().split("T")[0];
 }
 
@@ -40,6 +43,33 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
+  const [currency, setCurrency] = useState<string>(DEFAULT_CURRENCY);
+  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
+  const currencyRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+
+  // Persist currency to localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("spendr_currency");
+    if (saved) setCurrency(saved);
+  }, []);
+
+  function selectCurrency(code: string) {
+    setCurrency(code);
+    localStorage.setItem("spendr_currency", code);
+    setShowCurrencyPicker(false);
+  }
+
+  // Close picker on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (currencyRef.current && !currencyRef.current.contains(e.target as Node)) {
+        setShowCurrencyPicker(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   useEffect(() => {
     const { data: { subscription } } = onAuthStateChange(setUser);
@@ -84,14 +114,14 @@ export default function Home() {
   });
 
   const filters: { key: Filter; label: string }[] = [
-    { key: "all", label: "All" },
-    { key: "today", label: "Today" },
-    { key: "week", label: "This Week" },
+    { key: "all",   label: "All"       },
+    { key: "today", label: "Today"     },
+    { key: "week",  label: "This Week" },
   ];
 
   if (user === undefined) {
     return (
-      <main className="relative z-10 min-h-screen bg-background flex items-center justify-center">
+      <main className="relative z-10 min-h-screen flex items-center justify-center">
         <span className="font-mono text-sm text-muted animate-pulse">Loading...</span>
       </main>
     );
@@ -99,7 +129,7 @@ export default function Home() {
 
   if (user === null) {
     return (
-      <main className="relative z-10 min-h-screen bg-background text-text">
+      <main className="relative z-10 min-h-screen text-text">
         <div className="max-w-sm mx-auto px-4 py-20">
           <Logo className="h-7 w-auto mx-auto mb-8" />
           <AuthForm />
@@ -109,31 +139,14 @@ export default function Home() {
   }
 
   return (
-    <main className="relative z-10 min-h-screen bg-background text-text">
-      <div className="max-w-2xl mx-auto px-4 py-8 flex flex-col gap-6">
+    <main className="relative z-10 min-h-screen text-text">
+      <div className="max-w-2xl mx-auto px-4 pt-4 pb-8 flex flex-col gap-2">
 
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <Logo className="h-7 w-auto" />
-
-          <div className="flex items-center gap-3">
-            {/* Month nav */}
-            <button
-              onClick={prevMonth}
-              className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-muted hover:text-white hover:border-white transition-colors"
-            >
-              ‹
-            </button>
-            <span className="font-sans text-sm text-white font-medium min-w-[72px] text-center">
-              {MONTH_NAMES[selectedMonth.month - 1]} {selectedMonth.year}
-            </span>
-            <button
-              onClick={nextMonth}
-              className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-muted hover:text-white hover:border-white transition-colors"
-            >
-              ›
-            </button>
-
+        <div className="flex flex-col gap-5">
+          {/* Row 1: Logo + Sign out */}
+          <div className="flex items-center justify-between">
+            <Logo className="h-7 w-auto" />
             <button
               onClick={() => signOut()}
               aria-label="Sign out"
@@ -142,10 +155,65 @@ export default function Home() {
               <LogOut size={14} />
             </button>
           </div>
+
+          {/* Row 2: Currency + Month nav */}
+          <div className="flex items-center gap-2 w-full justify-between">
+            {/* Currency picker */}
+            <div ref={currencyRef} className="relative">
+              <button
+                onClick={() => setShowCurrencyPicker((v) => !v)}
+                className="flex items-center gap-1 h-8 px-3 rounded-full border border-border text-muted hover:text-white hover:border-white transition-colors text-xs font-mono"
+              >
+                {currency}
+                <ChevronDown size={11} />
+              </button>
+
+            </div>
+
+            <BottomDrawer
+              open={showCurrencyPicker}
+              onClose={() => setShowCurrencyPicker(false)}
+              title="Select Currency"
+            >
+              {CURRENCIES.map((c) => (
+                <button
+                  key={c.code}
+                  onClick={() => selectCurrency(c.code)}
+                  className={`w-full flex items-center justify-between px-4 py-3.5 text-sm transition-colors border-b border-border/50 last:border-0 ${
+                    currency === c.code
+                      ? "text-accent bg-accent/10"
+                      : "text-white hover:bg-surface"
+                  }`}
+                >
+                  <span className="font-mono font-semibold text-base">{c.code}</span>
+                  <span className="text-sm text-muted">{c.name}</span>
+                </button>
+              ))}
+            </BottomDrawer>
+
+            {/* Month nav */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={prevMonth}
+                className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-muted hover:text-white hover:border-white transition-colors"
+              >
+                ‹
+              </button>
+              <span className="font-sans text-sm text-white font-medium min-w-[72px] text-center">
+                {MONTH_NAMES[selectedMonth.month - 1]} {selectedMonth.year}
+              </span>
+              <button
+                onClick={nextMonth}
+                className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-muted hover:text-white hover:border-white transition-colors"
+              >
+                ›
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Stats */}
-        <StatsBar expenses={expenses} selectedMonth={selectedMonth} />
+        <StatsBar expenses={expenses} selectedMonth={selectedMonth} currency={currency} />
 
         {/* Add form */}
         <AddExpenseForm userId={user.id} onExpenseAdded={fetchExpenses} />
@@ -168,21 +236,25 @@ export default function Home() {
         </div>
 
         {/* Expense list / loading / error */}
+        <div className="mt-4">
         {fetchError ? (
           <div className="bg-surface rounded-xl border border-danger/40 p-5 text-center">
             <p className="text-danger font-mono text-sm">{fetchError}</p>
-            <button
-              onClick={fetchExpenses}
-              className="mt-3 text-xs font-mono text-muted underline hover:text-white"
-            >
+            <button onClick={fetchExpenses} className="mt-3 text-xs font-mono text-muted underline hover:text-white">
               Retry
             </button>
           </div>
         ) : loading ? (
           <LoadingSkeleton />
         ) : (
-          <ExpenseList expenses={filteredExpenses} onDeleted={fetchExpenses} onUpdated={fetchExpenses} />
+          <ExpenseList
+            expenses={filteredExpenses}
+            onDeleted={fetchExpenses}
+            onUpdated={fetchExpenses}
+            currency={currency}
+          />
         )}
+        </div>
       </div>
     </main>
   );

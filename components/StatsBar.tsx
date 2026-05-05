@@ -1,24 +1,19 @@
 "use client";
 
 import type { Expense } from "@/types";
+import { formatAmount } from "@/lib/currencies";
 
 interface Props {
   expenses: Expense[];
   selectedMonth: { year: number; month: number };
-}
-
-function formatAED(amount: number) {
-  return `AED ${amount.toLocaleString("en-AE", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+  currency: string;
 }
 
 function todayISO() {
   return new Date().toISOString().split("T")[0];
 }
 
-export default function StatsBar({ expenses, selectedMonth }: Props) {
+export default function StatsBar({ expenses, selectedMonth, currency }: Props) {
   const today = todayISO();
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
@@ -31,22 +26,22 @@ export default function StatsBar({ expenses, selectedMonth }: Props) {
     .reduce((sum, e) => sum + Number(e.amount), 0);
 
   const stats = [
-    { label: isCurrentMonth ? "This Month" : "Month Total", value: formatAED(monthTotal), bar: "#9FE870", color: "#ffffff" },
-    { label: "Today",        value: formatAED(todayTotal),  bar: "#00B67A", color: "#ffffff" },
-    { label: "Transactions", value: String(expenses.length), bar: "#6b6b80", color: "#ffffff" },
+    { label: isCurrentMonth ? "This Month" : "Month Total", value: formatAmount(monthTotal, currency) },
+    { label: "Today",  value: formatAmount(todayTotal, currency) },
+    { label: "Txns",   value: String(expenses.length)            },
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-3 gap-2">
       {stats.map((stat) => (
         <div
           key={stat.label}
-          className="bg-surface rounded-xl border border-border pt-3 pb-4 px-4 flex flex-col gap-1"
+          className="bg-surface rounded-xl border border-border pt-3 pb-4 px-3 sm:px-4 flex flex-col gap-1"
         >
-          <span className="font-sans text-xs text-muted uppercase tracking-widest font-semibold">
+          <span className="font-sans text-xs text-muted uppercase tracking-widest font-semibold truncate">
             {stat.label}
           </span>
-          <span className="font-mono text-xl sm:text-2xl font-bold" style={{ color: stat.color }}>
+          <span className="font-mono text-lg sm:text-2xl font-bold text-white leading-tight">
             {stat.value}
           </span>
         </div>
