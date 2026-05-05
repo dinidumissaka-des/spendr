@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useRef, FormEvent } from "react";
-import { Plus, Loader2, CalendarDays, ChevronDown } from "lucide-react";
+import { Plus, Loader2, CalendarDays, ChevronDown, Pencil } from "lucide-react";
 import { addExpense } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import DatePickerDrawer from "@/components/DatePickerDrawer";
 import BottomDrawer from "@/components/BottomDrawer";
+import { CATEGORY_COLORS } from "@/lib/categories";
 
 const PRESET_CATEGORIES = [
   "Food & Dining",
@@ -103,7 +104,15 @@ export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
           onClick={() => setShowCategoryDrawer(true)}
           className="h-11 w-full rounded-xl border border-border bg-surface2 px-4 text-sm text-white flex items-center justify-between"
         >
-          <span>{isCustom ? (customCategory.trim() || "Custom") : category}</span>
+          <span className="flex items-center gap-2">
+            {!isCustom && (
+              <span
+                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: CATEGORY_COLORS[category] ?? "#717a68" }}
+              />
+            )}
+            <span>{isCustom ? (customCategory.trim() || "Custom") : category}</span>
+          </span>
           <ChevronDown size={14} className="text-muted" />
         </button>
         <BottomDrawer
@@ -115,21 +124,28 @@ export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
             <button
               key={c}
               onClick={() => { setCategory(c); setShowCategoryDrawer(false); }}
-              className={`w-full flex items-center justify-between px-4 py-3.5 text-sm transition-colors border-b border-border/50 last:border-0 ${
+              className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm transition-colors border-b border-border/50 last:border-0 ${
                 category === c && !isCustom
                   ? "text-accent bg-accent/10"
                   : "text-white hover:bg-surface"
               }`}
             >
+              <span
+                className="w-3.5 h-3.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: CATEGORY_COLORS[c] ?? "#717a68" }}
+              />
               <span className="font-sans">{c}</span>
             </button>
           ))}
           <button
             onClick={() => { setCategory("__custom__"); setShowCategoryDrawer(false); }}
-            className={`w-full flex items-center justify-between px-4 py-3.5 text-sm transition-colors ${
+            className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm transition-colors ${
               isCustom ? "text-accent bg-accent/10" : "text-white hover:bg-surface"
             }`}
           >
+            <span className="w-3.5 h-3.5 rounded-full flex-shrink-0 flex items-center justify-center border border-border">
+              <Pencil size={8} className="text-muted" />
+            </span>
             <span className="font-sans">Custom...</span>
           </button>
         </BottomDrawer>
@@ -190,10 +206,10 @@ export default function AddExpenseForm({ userId, onExpenseAdded }: Props) {
       <Button
         onClick={handleSubmit}
         disabled={submitting}
-        size="icon"
-        className="self-end"
+        className="w-full flex items-center justify-center gap-2"
       >
-        {submitting ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
+        {submitting ? <Loader2 size={17} className="animate-spin" /> : <Plus size={17} strokeWidth={2.5} />}
+        <span>{submitting ? "Adding…" : "Add Expense"}</span>
       </Button>
     </div>
   );

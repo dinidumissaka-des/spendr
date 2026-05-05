@@ -4,19 +4,8 @@ import { useState } from "react";
 import { Trash2, Pencil, Check, X } from "lucide-react";
 import { deleteExpense, updateExpense } from "@/lib/supabase";
 import { formatAmount } from "@/lib/currencies";
+import { CATEGORY_COLORS } from "@/lib/categories";
 import type { Expense } from "@/types";
-
-const CATEGORY_COLORS: Record<string, string> = {
-  "Food & Dining": "#9FE870",
-  Grocery:         "#c8f55a",
-  Transport:       "#00B67A",
-  Shopping:        "#f5c85a",
-  Entertainment:   "#f55adb",
-  Health:          "#5a9cf5",
-  Utilities:       "#f5885a",
-  Travel:          "#a55af5",
-  Education:       "#5af5a8",
-};
 
 const PRESET_CATEGORIES = Object.keys(CATEGORY_COLORS);
 
@@ -127,11 +116,12 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
 
         return (
           <div key={date}>
-            <div className="flex items-center justify-between mb-2 px-1">
-              <span className="font-mono text-xs text-muted uppercase tracking-widest">
+            <div className="flex items-center gap-3 mb-2 px-1">
+              <span className="font-mono text-xs text-muted uppercase tracking-widest whitespace-nowrap">
                 {formatDateLabel(date)}
               </span>
-              <span className="font-mono text-xs text-muted">
+              <div className="flex-1 h-px bg-border" />
+              <span className="font-mono text-xs text-muted whitespace-nowrap">
                 {currency} {formatAmount(dayTotal, currency)}
               </span>
             </div>
@@ -198,12 +188,9 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                 return (
                   <div
                     key={expense.id}
-                    className="group flex items-center gap-3 px-4 py-3.5 hover:bg-surface2 transition-colors"
+                    className="group flex items-center gap-3 pl-3.5 pr-4 py-3.5 hover:bg-surface2 transition-colors border-l-2"
+                    style={{ borderLeftColor: categoryColor(expense.category) }}
                   >
-                    <span
-                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: categoryColor(expense.category) }}
-                    />
 
                     <div className="flex-1 min-w-0">
                       <p className="text-text text-sm font-sans truncate">{expense.description}</p>
