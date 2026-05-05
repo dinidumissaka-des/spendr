@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Trash2, Pencil, Check, X } from "lucide-react";
 import { deleteExpense, updateExpense } from "@/lib/supabase";
 import { formatAmount } from "@/lib/currencies";
@@ -12,7 +12,6 @@ const PRESET_CATEGORIES = Object.keys(CATEGORY_COLORS);
 function categoryColor(cat: string) {
   return CATEGORY_COLORS[cat] ?? "#717a68";
 }
-
 
 function formatDateLabel(dateStr: string) {
   const today = new Date().toISOString().split("T")[0];
@@ -37,11 +36,18 @@ interface EditState {
   date: string;
 }
 
+const SWIPE_THRESHOLD = 72;
+
 export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editState, setEditState] = useState<EditState | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const touchStartX = useRef(0);
+  const touchActiveId = useRef<string | null>(null);
+  const touchDx = useRef(0);
 
   function startEdit(expense: Expense) {
     setEditingId(expense.id);
@@ -62,7 +68,6 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
     if (!editState) return;
     const parsed = parseFloat(editState.amount);
     if (!editState.description.trim() || isNaN(parsed) || parsed <= 0) return;
-
     setSaving(true);
     try {
       await updateExpense(id, {
@@ -88,6 +93,45 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
       // parent will re-fetch
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  function snapBack(id: string) {
+    const el = rowRefs.current[id];
+    if (!el) return;
+    el.style.transition = "transform 220ms ease";
+    el.style.transform = "translateX(0)";
+    touchActiveId.current = null;
+    touchDx.current = 0;
+  }
+
+  function onTouchStart(e: React.TouchEvent, id: string) {
+    touchStartX.current = e.touches[0].clientX;
+    touchActiveId.current = id;
+    touchDx.current = 0;
+    const el = rowRefs.current[id];
+    if (el) el.style.transition = "none";
+  }
+
+  function onTouchMove(e: React.TouchEvent, id: string) {
+    if (touchActiveId.current !== id) return;
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const clamped = Math.max(-110, Math.min(110, dx));
+    touchDx.current = clamped;
+    const el = rowRefs.current[id];
+    if (el) el.style.transform = `translateX(${clamped}px)`;
+  }
+
+  function onTouchEnd(id: string, expense: Expense) {
+    const dx = touchDx.current;
+    if (dx > SWIPE_THRESHOLD) {
+      snapBack(id);
+      startEdit(expense);
+    } else if (dx < -SWIPE_THRESHOLD) {
+      snapBack(id);
+      handleDelete(id);
+    } else {
+      snapBack(id);
     }
   }
 
@@ -186,53 +230,67 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                 }
 
                 return (
-                  <div
-                    key={expense.id}
-                    className="group flex items-center gap-3 pl-3.5 pr-4 py-3.5 hover:bg-surface2 transition-colors border-l-2"
-                    style={{ borderLeftColor: categoryColor(expense.category) }}
-                  >
-
-                    <div className="flex-1 min-w-0">
-                      <p className="text-text text-sm font-sans truncate">{expense.description}</p>
-                      <span
-                        className="inline-block mt-0.5 text-xs font-mono px-1.5 py-0.5 rounded-full"
-                        style={{
-                          backgroundColor: `${categoryColor(expense.category)}18`,
-                          color: categoryColor(expense.category),
-                        }}
-                      >
-                        {expense.category}
-                      </span>
+                  <div key={expense.id} className="relative overflow-hidden">
+                    {/* Edit action — revealed on right swipe */}
+                    <div className="absolute inset-0 flex items-center gap-2 pl-5 bg-accent/15">
+                      <Pencil size={15} className="text-accent" />
+                      <span className="text-xs font-semibold text-accent">Edit</span>
+                    </div>
+                    {/* Delete action — revealed on left swipe */}
+                    <div className="absolute inset-0 flex items-center justify-end gap-2 pr-5 bg-danger/15">
+                      <span className="text-xs font-semibold text-danger">Delete</span>
+                      <Trash2 size={15} className="text-danger" />
                     </div>
 
-                    {expense.time && (
-                      <span className="font-mono text-xs text-muted hidden sm:block flex-shrink-0">
-                        {expense.time}
+                    {/* Row */}
+                    <div
+                      ref={(el) => { rowRefs.current[expense.id] = el; }}
+                      onTouchStart={(e) => onTouchStart(e, expense.id)}
+                      onTouchMove={(e) => onTouchMove(e, expense.id)}
+                      onTouchEnd={() => onTouchEnd(expense.id, expense)}
+                      onTouchCancel={() => snapBack(expense.id)}
+                      className="group relative flex items-center gap-3 px-4 py-3.5 bg-surface hover:bg-surface2 transition-colors"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-text text-sm font-sans truncate">{expense.description}</p>
+                        <span
+                          className="inline-block mt-0.5 text-xs font-mono px-1.5 py-0.5 rounded-full"
+                          style={{
+                            backgroundColor: `${categoryColor(expense.category)}18`,
+                            color: categoryColor(expense.category),
+                          }}
+                        >
+                          {expense.category}
+                        </span>
+                      </div>
+
+                      {expense.time && (
+                        <span className="font-mono text-xs text-muted hidden sm:block flex-shrink-0">
+                          {expense.time}
+                        </span>
+                      )}
+
+                      <span className="font-mono text-sm text-white flex-shrink-0">
+                        {currency} {formatAmount(Number(expense.amount), currency)}
                       </span>
-                    )}
 
-                    <span className="font-mono text-sm text-white flex-shrink-0">
-                      {currency} {formatAmount(Number(expense.amount), currency)}
-                    </span>
+                      <button
+                        onClick={() => startEdit(expense)}
+                        aria-label="Edit expense"
+                        className="opacity-25 hover:opacity-100 group-hover:opacity-100 flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-white transition-all"
+                      >
+                        <Pencil size={13} />
+                      </button>
 
-                    {/* Edit */}
-                    <button
-                      onClick={() => startEdit(expense)}
-                      aria-label="Edit expense"
-                      className="opacity-25 hover:opacity-100 group-hover:opacity-100 flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-white transition-all"
-                    >
-                      <Pencil size={13} />
-                    </button>
-
-                    {/* Delete */}
-                    <button
-                      onClick={() => handleDelete(expense.id)}
-                      disabled={deletingId === expense.id}
-                      aria-label="Delete expense"
-                      className="opacity-25 hover:opacity-100 group-hover:opacity-100 flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-danger disabled:opacity-30 transition-all"
-                    >
-                      {deletingId === expense.id ? <span className="text-sm">…</span> : <Trash2 size={13} />}
-                    </button>
+                      <button
+                        onClick={() => handleDelete(expense.id)}
+                        disabled={deletingId === expense.id}
+                        aria-label="Delete expense"
+                        className="opacity-25 hover:opacity-100 group-hover:opacity-100 flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-danger disabled:opacity-30 transition-all"
+                      >
+                        {deletingId === expense.id ? <span className="text-sm">…</span> : <Trash2 size={13} />}
+                      </button>
+                    </div>
                   </div>
                 );
               })}
