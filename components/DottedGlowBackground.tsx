@@ -19,7 +19,6 @@ type DottedGlowBackgroundProps = {
   speedMin?: number;
   speedMax?: number;
   speedScale?: number;
-  /** radius around cursor that influences dots */
   hoverRadius?: number;
 };
 
@@ -45,6 +44,7 @@ export const DottedGlowBackground = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mouseRef = useRef<{ x: number; y: number } | null>(null);
+  const sizeRef = useRef({ width: 0, height: 0 });
   const [resolvedColor, setResolvedColor] = useState<string>(color);
   const [resolvedGlowColor, setResolvedGlowColor] = useState<string>(glowColor);
 
@@ -102,6 +102,7 @@ export const DottedGlowBackground = ({
 
     const resize = () => {
       const { width, height } = container.getBoundingClientRect();
+      sizeRef.current = { width, height };
       el.width = Math.max(1, Math.floor(width * dpr));
       el.height = Math.max(1, Math.floor(height * dpr));
       el.style.width = `${Math.floor(width)}px`;
@@ -117,7 +118,7 @@ export const DottedGlowBackground = ({
 
     const regenDots = () => {
       dots = [];
-      const { width, height } = container.getBoundingClientRect();
+      const { width, height } = sizeRef.current;
       const cols = Math.ceil(width / gap) + 2;
       const rows = Math.ceil(height / gap) + 2;
       const min = Math.min(speedMin, speedMax);
@@ -136,7 +137,6 @@ export const DottedGlowBackground = ({
     };
     regenDots();
 
-    // Mouse tracking relative to container
     const onMouseMove = (e: MouseEvent) => {
       const rect = container.getBoundingClientRect();
       mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
@@ -145,65 +145,87 @@ export const DottedGlowBackground = ({
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseleave", onMouseLeave);
 
-    let last = performance.now();
+    // Alpha buckets for batched drawing (avoids per-dot fill calls)
+    const BUCKETS = 12;
+    const buckets: number[][] = Array.from({ length: BUCKETS }, () => []);
 
     const draw = (now: number) => {
       if (stopped) return;
       if (!isVisible) { raf = requestAnimationFrame(draw); return; }
-      last = now;
-      const { width, height } = container.getBoundingClientRect();
-      ctx.clearRect(0, 0, el.width, el.height);
 
-      if (backgroundOpacity > 0) {
-        ctx.globalAlpha = opacity;
-        const grad = ctx.createRadialGradient(width * 0.5, height * 0.4, Math.min(width, height) * 0.1, width * 0.5, height * 0.5, Math.max(width, height) * 0.7);
-        grad.addColorStop(0, "rgba(0,0,0,0)");
-        grad.addColorStop(1, `rgba(0,0,0,${Math.min(Math.max(backgroundOpacity, 0), 1)})`);
-        ctx.fillStyle = grad as unknown as CanvasGradient;
-        ctx.fillRect(0, 0, width, height);
-      }
+      const { width, height } = sizeRef.current; // cached — no reflow
+      ctx.clearRect(0, 0, width, height);
 
-      ctx.save();
-      ctx.fillStyle = resolvedColor;
       const time = (now / 1000) * Math.max(speedScale, 0);
       const mouse = mouseRef.current;
+      const hr2 = hoverRadius * hoverRadius;
 
+      // Clear buckets
+      for (let b = 0; b < BUCKETS; b++) buckets[b].length = 0;
+
+      // Classify non-hover dots into alpha buckets
       for (let i = 0; i < dots.length; i++) {
         const d = dots[i];
-        const mod = (time * d.speed + d.phase) % 2;
-        const lin = mod < 1 ? mod : 2 - mod;
-        const baseAlpha = 0.25 + 0.55 * lin;
 
-        // Mouse proximity influence
-        let hoverBoost = 0;
+        // Skip dots in hover zone — drawn separately
         if (mouse) {
           const dx = d.x - mouse.x;
           const dy = d.y - mouse.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < hoverRadius) {
-            hoverBoost = Math.pow(1 - dist / hoverRadius, 2);
-          }
+          if (dx * dx + dy * dy < hr2) continue;
         }
 
-        const a = Math.min(baseAlpha + hoverBoost * 0.75, 1);
-        const glowIntensity = Math.max(0, (a - 0.6) / 0.4) + hoverBoost;
+        const mod = (time * d.speed + d.phase) % 2;
+        const lin = mod < 1 ? mod : 2 - mod;
+        const a = (0.25 + 0.55 * lin) * opacity;
+        const bucket = Math.min(Math.floor(a * BUCKETS), BUCKETS - 1);
+        buckets[bucket].push(i);
+      }
 
-        if (glowIntensity > 0) {
-          ctx.shadowColor = resolvedGlowColor;
-          ctx.shadowBlur = 6 * Math.min(glowIntensity, 1) + hoverBoost * 10;
-        } else {
-          ctx.shadowColor = "transparent";
-          ctx.shadowBlur = 0;
-        }
+      // Draw each bucket as a single path — massively reduces GPU state changes
+      ctx.save();
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = resolvedColor;
 
-        // Slightly enlarge dots near cursor
-        const r = radius + hoverBoost * radius * 1.2;
-
-        ctx.globalAlpha = a * opacity;
+      for (let b = 0; b < BUCKETS; b++) {
+        if (buckets[b].length === 0) continue;
+        const alpha = (b + 0.5) / BUCKETS;
+        ctx.globalAlpha = alpha;
         ctx.beginPath();
-        ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
+        for (let k = 0; k < buckets[b].length; k++) {
+          const d = dots[buckets[b][k]];
+          ctx.moveTo(d.x + radius, d.y);
+          ctx.arc(d.x, d.y, radius, 0, Math.PI * 2);
+        }
         ctx.fill();
       }
+
+      // Draw hover dots individually with glow
+      if (mouse) {
+        ctx.fillStyle = resolvedColor;
+        ctx.shadowColor = resolvedGlowColor;
+        for (let i = 0; i < dots.length; i++) {
+          const d = dots[i];
+          const dx = d.x - mouse.x;
+          const dy = d.y - mouse.y;
+          const dist2 = dx * dx + dy * dy;
+          if (dist2 >= hr2) continue;
+
+          const dist = Math.sqrt(dist2);
+          const hoverBoost = Math.pow(1 - dist / hoverRadius, 2);
+          const mod = (time * d.speed + d.phase) % 2;
+          const lin = mod < 1 ? mod : 2 - mod;
+          const a = Math.min((0.25 + 0.55 * lin + hoverBoost * 0.75), 1);
+
+          ctx.shadowBlur = hoverBoost * 14;
+          ctx.globalAlpha = a * opacity;
+          const r = radius + hoverBoost * radius * 1.2;
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
       ctx.restore();
       raf = requestAnimationFrame(draw);
     };
