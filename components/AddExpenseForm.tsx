@@ -124,60 +124,82 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
         />
       </div>
 
-      {/* Category */}
-      <div className="flex flex-col gap-2">
-        <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Category</Label>
-        <button
-          type="button"
-          onClick={() => setShowCategoryDrawer(true)}
-          className="h-11 w-full rounded-xl border border-border bg-surface2 px-4 text-sm text-white flex items-center justify-between"
-        >
-          <span className="flex items-center gap-2">
-            {!isCustom && (
-              <span
-                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                style={{ backgroundColor: CATEGORY_COLORS[category] ?? "#717a68" }}
-              />
-            )}
-            <span>{isCustom ? (customCategory.trim() || "Custom") : category}</span>
-          </span>
-          <ChevronDown size={14} className="text-muted" />
-        </button>
-        <BottomDrawer
-          open={showCategoryDrawer}
-          onClose={() => setShowCategoryDrawer(false)}
-          title="Select Category"
-        >
-          {PRESET_CATEGORIES.map((c) => (
-            <button
-              key={c}
-              onClick={() => { setCategory(c); setShowCategoryDrawer(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm transition-colors border-b border-border/50 last:border-0 ${
-                category === c && !isCustom
-                  ? "text-accent bg-accent/10"
-                  : "text-white hover:bg-surface"
-              }`}
-            >
-              <span
-                className="w-3.5 h-3.5 rounded-full flex-shrink-0"
-                style={{ backgroundColor: CATEGORY_COLORS[c] ?? "#717a68" }}
-              />
-              <span className="font-sans">{c}</span>
-            </button>
-          ))}
+      {/* Category + Date row */}
+      <div className="flex gap-3">
+        <div className="flex flex-col gap-2 flex-1">
+          <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Category</Label>
           <button
-            onClick={() => { setCategory("__custom__"); setShowCategoryDrawer(false); }}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm transition-colors ${
-              isCustom ? "text-accent bg-accent/10" : "text-white hover:bg-surface"
+            type="button"
+            onClick={() => setShowCategoryDrawer(true)}
+            className="h-11 w-full rounded-xl border border-border bg-surface2 px-4 text-sm text-white flex items-center justify-between"
+          >
+            <span className="flex items-center gap-2 min-w-0">
+              {!isCustom && (
+                <span
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: CATEGORY_COLORS[category] ?? "#717a68" }}
+                />
+              )}
+              <span className="truncate">{isCustom ? (customCategory.trim() || "Custom") : category}</span>
+            </span>
+            <ChevronDown size={14} className="text-muted flex-shrink-0 ml-1" />
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-2 flex-shrink-0">
+          <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Date</Label>
+          <button
+            type="button"
+            onClick={() => setShowDateDrawer(true)}
+            className="h-11 rounded-xl border border-border bg-surface2 px-4 text-sm text-white flex items-center gap-2 whitespace-nowrap"
+          >
+            <span>{date}</span>
+            <CalendarDays size={15} className="text-muted" />
+          </button>
+        </div>
+      </div>
+
+      <BottomDrawer
+        open={showCategoryDrawer}
+        onClose={() => setShowCategoryDrawer(false)}
+        title="Select Category"
+      >
+        {PRESET_CATEGORIES.map((c) => (
+          <button
+            key={c}
+            onClick={() => { setCategory(c); setShowCategoryDrawer(false); }}
+            className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm transition-colors border-b border-border/50 last:border-0 ${
+              category === c && !isCustom
+                ? "text-accent bg-accent/10"
+                : "text-white hover:bg-surface"
             }`}
           >
-            <span className="w-3.5 h-3.5 rounded-full flex-shrink-0 flex items-center justify-center border border-border">
-              <Pencil size={8} className="text-muted" />
-            </span>
-            <span className="font-sans">Custom...</span>
+            <span
+              className="w-3.5 h-3.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: CATEGORY_COLORS[c] ?? "#717a68" }}
+            />
+            <span className="font-sans">{c}</span>
           </button>
-        </BottomDrawer>
-      </div>
+        ))}
+        <button
+          onClick={() => { setCategory("__custom__"); setShowCategoryDrawer(false); }}
+          className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm transition-colors ${
+            isCustom ? "text-accent bg-accent/10" : "text-white hover:bg-surface"
+          }`}
+        >
+          <span className="w-3.5 h-3.5 rounded-full flex-shrink-0 flex items-center justify-center border border-border">
+            <Pencil size={8} className="text-muted" />
+          </span>
+          <span className="font-sans">Custom...</span>
+        </button>
+      </BottomDrawer>
+
+      <DatePickerDrawer
+        open={showDateDrawer}
+        onClose={() => setShowDateDrawer(false)}
+        value={date}
+        onChange={setDate}
+      />
 
       {isCustom && (
         <div className="flex flex-col gap-2">
@@ -191,25 +213,6 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
           />
         </div>
       )}
-
-      {/* Date */}
-      <div className="flex flex-col gap-2">
-        <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Date</Label>
-        <button
-          type="button"
-          onClick={() => setShowDateDrawer(true)}
-          className="h-11 w-full rounded-xl border border-border bg-surface2 px-4 text-sm text-white flex items-center justify-between"
-        >
-          <span>{date}</span>
-          <CalendarDays size={16} className="text-muted" />
-        </button>
-        <DatePickerDrawer
-          open={showDateDrawer}
-          onClose={() => setShowDateDrawer(false)}
-          value={date}
-          onChange={setDate}
-        />
-      </div>
 
       {error && <p className="text-danger text-sm">{error}</p>}
       {success && <p className="text-accent text-sm">Expense added!</p>}
