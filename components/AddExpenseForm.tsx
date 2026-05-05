@@ -108,7 +108,7 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
           value={displayAmount}
           onChange={handleAmountChange}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          placeholder="0"
+          placeholder="0.00"
           className="w-full bg-transparent text-right text-6xl font-bold text-white placeholder:text-muted/40 outline-none border-none"
         />
         <div className="h-px w-16 bg-border mt-1" />
