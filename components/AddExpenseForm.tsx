@@ -163,16 +163,15 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
         <div className="flex flex-wrap gap-2 px-4 py-5">
           {PRESET_CATEGORIES.map((c) => {
             const selected = category === c && !isCustom;
-            const color = CATEGORY_COLORS[c] ?? "#717a68";
             return (
               <button
                 key={c}
                 onClick={() => { setCategory(c); setShowCategoryDrawer(false); }}
-                className="px-4 py-2 rounded-full text-sm font-medium transition-all"
-                style={{
-                  backgroundColor: selected ? color : `${color}22`,
-                  color: selected ? "#163300" : color,
-                }}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  selected
+                    ? "bg-accent text-[#163300]"
+                    : "bg-accent/10 text-accent"
+                }`}
               >
                 {c}
               </button>
@@ -180,8 +179,8 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
           })}
           <button
             onClick={() => { setCategory("__custom__"); setShowCategoryDrawer(false); }}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
-              isCustom ? "bg-white text-background border-white" : "border-border text-muted"
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              isCustom ? "bg-accent text-[#163300]" : "bg-accent/10 text-accent"
             }`}
           >
             Custom...
