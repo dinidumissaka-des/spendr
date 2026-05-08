@@ -11,6 +11,7 @@ import AddExpenseForm from "@/components/AddExpenseForm";
 import Logo from "@/components/Logo";
 import AuthForm from "@/components/AuthForm";
 import StatsBar from "@/components/StatsBar";
+import BudgetBar from "@/components/BudgetBar";
 import ExpenseList from "@/components/ExpenseList";
 import BottomDrawer from "@/components/BottomDrawer";
 
@@ -214,6 +215,9 @@ export default function Home() {
 
         {/* Stats */}
         <StatsBar expenses={expenses} selectedMonth={selectedMonth} currency={currency} />
+
+        {/* Budget */}
+        <BudgetBar spent={expenses.reduce((s, e) => s + Number(e.amount), 0)} currency={currency} />
 
         {/* Add form */}
         <AddExpenseForm userId={user.id} currency={currency} onExpenseAdded={fetchExpenses} />
