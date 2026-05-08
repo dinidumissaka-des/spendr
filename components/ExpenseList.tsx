@@ -124,10 +124,18 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
     if (el) el.style.transition = "none";
   }
 
+  function haptic(ms: number) {
+    if ("vibrate" in navigator) navigator.vibrate(ms);
+  }
+
   function onTouchMove(e: React.TouchEvent, id: string) {
     if (touchActiveId.current !== id) return;
     const dx = e.touches[0].clientX - touchStartX.current;
     const clamped = Math.max(-110, Math.min(110, dx));
+    // Buzz once when crossing the threshold
+    if (Math.abs(touchDx.current) < SWIPE_THRESHOLD && Math.abs(clamped) >= SWIPE_THRESHOLD) {
+      haptic(8);
+    }
     touchDx.current = clamped;
     const el = rowRefs.current[id];
     if (el) el.style.transform = `translateX(${clamped}px)`;
@@ -150,7 +158,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
     const el = rowRefs.current[id];
 
     if (dx > SWIPE_THRESHOLD) {
-      // Slide off right then open edit
+      haptic(18);
       if (el) {
         el.style.transition = "transform 200ms ease-in";
         el.style.transform = "translateX(110%)";
@@ -161,7 +169,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
         startEdit(expense);
       }, 200);
     } else if (dx < -SWIPE_THRESHOLD) {
-      // Slide off left then delete
+      haptic(18);
       if (el) {
         el.style.transition = "transform 200ms ease-in";
         el.style.transform = "translateX(-110%)";

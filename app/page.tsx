@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { LogOut, ChevronDown } from "lucide-react";
+import { LogOut, ChevronDown, Sun, Moon } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { getExpensesByMonth, onAuthStateChange, signOut } from "@/lib/supabase";
 import type { Expense } from "@/types";
@@ -46,6 +46,7 @@ export default function Home() {
   const [filter, setFilter] = useState<Filter>("all");
   const [currency, setCurrency] = useState<string>(DEFAULT_CURRENCY);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const currencyRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
@@ -54,6 +55,22 @@ export default function Home() {
     const saved = localStorage.getItem("spendr_currency");
     if (saved) setCurrency(saved);
   }, []);
+
+  // Persist theme
+  useEffect(() => {
+    const saved = localStorage.getItem("spendr_theme") as "dark" | "light" | null;
+    if (saved) {
+      setTheme(saved);
+      document.documentElement.classList.toggle("light", saved === "light");
+    }
+  }, []);
+
+  function toggleTheme() {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    document.documentElement.classList.toggle("light", next === "light");
+    localStorage.setItem("spendr_theme", next);
+  }
 
   function selectCurrency(code: string) {
     setCurrency(code);
@@ -148,13 +165,22 @@ export default function Home() {
           {/* Row 1: Logo + Sign out */}
           <div className="flex items-center justify-between">
             <Logo className="h-7 w-auto" />
-            <button
-              onClick={() => signOut()}
-              aria-label="Sign out"
-              className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-muted hover:text-danger hover:border-danger/50 transition-colors"
-            >
-              <LogOut size={14} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+                className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-muted hover:text-white hover:border-white transition-colors"
+              >
+                {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+              </button>
+              <button
+                onClick={() => signOut()}
+                aria-label="Sign out"
+                className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-muted hover:text-danger hover:border-danger/50 transition-colors"
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
           </div>
 
           {/* Row 2: Currency + Month nav */}

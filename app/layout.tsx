@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
 import { DottedGlowBackground } from "@/components/DottedGlowBackground";
+import InstallPrompt from "@/components/InstallPrompt";
+import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -37,6 +39,8 @@ export default function RootLayout({
           />
         </div>
         {children}
+        <InstallPrompt />
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );
