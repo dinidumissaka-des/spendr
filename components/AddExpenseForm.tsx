@@ -123,36 +123,30 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
       </div>
 
       {/* Category + Date row */}
-      <div className="flex gap-3">
-        <div className="flex flex-col gap-2 flex-1">
-          <button
-            type="button"
-            onClick={() => setShowCategoryDrawer(true)}
-            className="h-[52px] w-full rounded-xl border border-border bg-surface2 px-4 text-base text-white flex items-center justify-between"
-          >
-            <span className="flex items-center gap-2 min-w-0">
-              {!isCustom && (
-                <span
-                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: CATEGORY_COLORS[category] ?? "#717a68" }}
-                />
-              )}
-              <span className="truncate">{isCustom ? (customCategory.trim() || "Custom") : category}</span>
-            </span>
-            <ChevronDown size={14} className="text-muted flex-shrink-0 ml-1" />
-          </button>
-        </div>
+      <div className="flex gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={() => setShowCategoryDrawer(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-border bg-surface2 text-sm text-white transition-colors hover:border-white/30"
+        >
+          {!isCustom && (
+            <span
+              className="w-2 h-2 rounded-full flex-shrink-0"
+              style={{ backgroundColor: CATEGORY_COLORS[category] ?? "#717a68" }}
+            />
+          )}
+          <span className="font-medium">{isCustom ? (customCategory.trim() || "Custom") : category}</span>
+          <ChevronDown size={12} className="text-muted" />
+        </button>
 
-        <div className="flex flex-col gap-2 flex-shrink-0">
-          <button
-            type="button"
-            onClick={() => setShowDateDrawer(true)}
-            className="h-[52px] rounded-xl border border-border bg-surface2 px-4 text-base text-white flex items-center gap-2 whitespace-nowrap"
-          >
-            <span>{date}</span>
-            <CalendarDays size={15} className="text-muted" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setShowDateDrawer(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-border bg-surface2 text-sm text-white transition-colors hover:border-white/30"
+        >
+          <CalendarDays size={13} className="text-muted" />
+          <span className="font-medium">{date}</span>
+        </button>
       </div>
 
       <BottomDrawer
