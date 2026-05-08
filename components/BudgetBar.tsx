@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Pencil, Check, X } from "lucide-react";
 import { formatAmount } from "@/lib/currencies";
+import GlassSurface from "@/components/GlassSurface";
 
 interface Props {
   spent: number;
@@ -44,18 +45,21 @@ export default function BudgetBar({ spent, currency }: Props) {
 
   if (!budget && !editing) {
     return (
-      <button
-        onClick={openEdit}
-        className="w-full text-left bg-surface rounded-xl border border-border border-dashed px-4 py-3.5 text-sm text-muted hover:text-white hover:border-border transition-colors"
-      >
-        + Set a monthly budget
-      </button>
+      <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
+        <button
+          onClick={openEdit}
+          className="w-full text-left px-4 py-3.5 text-sm text-muted hover:text-white transition-colors border border-dashed border-white/20 rounded-xl"
+        >
+          + Set a monthly budget
+        </button>
+      </GlassSurface>
     );
   }
 
   if (editing) {
     return (
-      <div className="bg-surface rounded-xl border border-border px-4 py-3.5 flex items-center gap-3">
+      <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
+      <div className="px-4 py-3.5 flex items-center gap-3 w-full">
         <span className="font-mono text-xs text-muted flex-shrink-0">{currency}</span>
         <input
           ref={inputRef}
@@ -73,6 +77,7 @@ export default function BudgetBar({ spent, currency }: Props) {
           <X size={13} />
         </button>
       </div>
+      </GlassSurface>
     );
   }
 
@@ -81,7 +86,8 @@ export default function BudgetBar({ spent, currency }: Props) {
   const remaining = budget! - spent;
 
   return (
-    <div className="bg-surface rounded-xl border border-border px-4 py-3.5 flex flex-col gap-3">
+    <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
+    <div className="px-4 py-3.5 flex flex-col gap-3 w-full">
       <div className="flex items-center justify-between">
         <span className="font-sans text-xs text-muted uppercase tracking-widest font-semibold">Monthly Budget</span>
         <button onClick={openEdit} className="text-muted hover:text-white transition-colors">
@@ -90,7 +96,7 @@ export default function BudgetBar({ spent, currency }: Props) {
       </div>
 
       {/* Progress bar */}
-      <div className="h-1.5 w-full bg-surface2 rounded-full overflow-hidden">
+      <div className="h-1.5 w-full bg-white/[0.08] rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${over ? "bg-danger" : "bg-accent"}`}
           style={{ width: `${percentage}%` }}
@@ -110,5 +116,6 @@ export default function BudgetBar({ spent, currency }: Props) {
         </span>
       </div>
     </div>
+    </GlassSurface>
   );
 }

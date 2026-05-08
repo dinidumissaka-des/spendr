@@ -2,31 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Dark theme (default) — values as space-separated RGB for Tailwind opacity support */
+html { color-scheme: dark; }
+
 :root {
-  --background:  16  16  20;
-  --surface:     28  28  36;
-  --surface2:    38  38  47;
-  --border:      46  46  58;
+  --background:  10  15  8;
+  --surface:     255 255 255;
+  --surface2:    255 255 255;
+  --border:      255 255 255;
   --foreground:  255 255 255;
-  --muted:       107 107 128;
+  --muted:       255 255 255;
   --accent:      159 232 112;
   --accent-on:   22  51  0;
   --danger:      224 92  92;
   --radius:      1rem;
-}
-
-/* Light theme */
-.light {
-  --background:  244 244 248;
-  --surface:     255 255 255;
-  --surface2:    235 235 242;
-  --border:      220 220 232;
-  --foreground:  16  16  20;
-  --muted:       120 120 140;
-  --accent:      74  158  26;
-  --accent-on:   255 255 255;
-  --danger:      217 79  79;
 }
 
 @layer base {
@@ -38,15 +26,8 @@
   }
   body {
     background-color: rgb(var(--background));
-    color: rgb(var(--foreground));
+    color: rgba(255, 255, 255, 0.9);
     -webkit-font-smoothing: antialiased;
-  }
-  /* Override hardcoded white text in light mode */
-  .light .text-white {
-    color: rgb(var(--foreground));
-  }
-  .light .placeholder\:text-muted\/40::placeholder {
-    color: rgb(var(--muted) / 0.4);
   }
 }
 

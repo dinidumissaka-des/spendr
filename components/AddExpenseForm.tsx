@@ -1,25 +1,16 @@
 "use client";
 
 import { useState, useRef, FormEvent } from "react";
-import { Plus, Loader2, CalendarDays, ChevronDown } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { addExpense } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DatePickerDrawer from "@/components/DatePickerDrawer";
-import BottomDrawer from "@/components/BottomDrawer";
+import CategoryPicker from "@/components/CategoryPicker";
+import GlassSurface from "@/components/GlassSurface";
 import { CATEGORY_COLORS } from "@/lib/categories";
 
-const PRESET_CATEGORIES = [
-  "Food & Dining",
-  "Grocery",
-  "Transport",
-  "Shopping",
-  "Entertainment",
-  "Health",
-  "Utilities",
-  "Travel",
-  "Education",
-];
+const PRESET_CATEGORIES = Object.keys(CATEGORY_COLORS);
 
 interface Props {
   userId: string;
@@ -94,7 +85,8 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
   }
 
   return (
-    <div className="bg-surface rounded-2xl border border-border p-6 flex flex-col gap-5">
+    <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
+    <div className="p-6 flex flex-col gap-5 w-full">
       {/* Hero amount input */}
       <div className="flex flex-col items-end gap-1 py-4">
         <span className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">{currency}</span>
@@ -106,7 +98,7 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
           onChange={handleAmountChange}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           placeholder="0.00"
-          className="w-full bg-transparent text-right text-6xl font-bold text-white placeholder:text-muted/40 outline-none border-none"
+          className="w-full bg-transparent text-right text-6xl font-bold text-white placeholder:text-white/25 outline-none border-none"
         />
         <div className="h-px w-16 bg-border mt-1" />
       </div>
@@ -126,61 +118,36 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
       <div className="flex gap-2 flex-wrap">
         <button
           type="button"
-          onClick={() => setShowCategoryDrawer(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-border bg-surface2 text-sm text-white transition-colors hover:border-white/30"
+          onClick={() => setShowCategoryDrawer((v) => !v)}
+          className={`h-[52px] flex items-center px-4 rounded-full border text-sm text-white transition-colors ${
+            showCategoryDrawer
+              ? "border-white/25 bg-white/10"
+              : "border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10"
+          }`}
         >
-          {!isCustom && (
-            <span
-              className="w-2 h-2 rounded-full flex-shrink-0"
-              style={{ backgroundColor: CATEGORY_COLORS[category] ?? "#717a68" }}
-            />
-          )}
           <span className="font-medium">{isCustom ? (customCategory.trim() || "Custom") : category}</span>
-          <ChevronDown size={12} className="text-muted" />
         </button>
 
         <button
           type="button"
           onClick={() => setShowDateDrawer(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-border bg-surface2 text-sm text-white transition-colors hover:border-white/30"
+          className="h-[52px] flex items-center px-4 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-sm text-white transition-colors hover:border-white/25 hover:bg-white/10"
         >
-          <CalendarDays size={13} className="text-muted" />
           <span className="font-medium">{date}</span>
         </button>
       </div>
 
-      <BottomDrawer
-        open={showCategoryDrawer}
-        onClose={() => setShowCategoryDrawer(false)}
-        title="Select Category"
-      >
-        <div className="flex flex-wrap gap-2 px-4 py-5">
-          {PRESET_CATEGORIES.map((c) => {
-            const selected = category === c && !isCustom;
-            return (
-              <button
-                key={c}
-                onClick={() => { setCategory(c); setShowCategoryDrawer(false); }}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  selected
-                    ? "bg-accent text-[#163300]"
-                    : "bg-accent/10 text-accent"
-                }`}
-              >
-                {c}
-              </button>
-            );
-          })}
-          <button
-            onClick={() => { setCategory("__custom__"); setShowCategoryDrawer(false); }}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              isCustom ? "bg-accent text-[#163300]" : "bg-accent/10 text-accent"
-            }`}
-          >
-            Custom...
-          </button>
-        </div>
-      </BottomDrawer>
+      {showCategoryDrawer && (
+        <CategoryPicker
+          open={showCategoryDrawer}
+          selected={category}
+          isCustom={isCustom}
+          onSelect={(cat) => {
+            setCategory(cat);
+            setShowCategoryDrawer(false);
+          }}
+        />
+      )}
 
       <DatePickerDrawer
         open={showDateDrawer}
@@ -213,5 +180,6 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
         <span>{submitting ? "Adding…" : "Add Expense"}</span>
       </Button>
     </div>
+    </GlassSurface>
   );
 }

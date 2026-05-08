@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { LogOut, ChevronDown, Sun, Moon } from "lucide-react";
+import { LogOut, ChevronDown } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { getExpensesByMonth, onAuthStateChange, signOut } from "@/lib/supabase";
 import type { Expense } from "@/types";
 import { CURRENCIES, DEFAULT_CURRENCY } from "@/lib/currencies";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import AddExpenseForm from "@/components/AddExpenseForm";
+import GlassSurface from "@/components/GlassSurface";
 import Logo from "@/components/Logo";
 import AuthForm from "@/components/AuthForm";
 import StatsBar from "@/components/StatsBar";
@@ -46,7 +47,6 @@ export default function Home() {
   const [filter, setFilter] = useState<Filter>("all");
   const [currency, setCurrency] = useState<string>(DEFAULT_CURRENCY);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const currencyRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
@@ -55,22 +55,6 @@ export default function Home() {
     const saved = localStorage.getItem("spendr_currency");
     if (saved) setCurrency(saved);
   }, []);
-
-  // Persist theme
-  useEffect(() => {
-    const saved = localStorage.getItem("spendr_theme") as "dark" | "light" | null;
-    if (saved) {
-      setTheme(saved);
-      document.documentElement.classList.toggle("light", saved === "light");
-    }
-  }, []);
-
-  function toggleTheme() {
-    const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    document.documentElement.classList.toggle("light", next === "light");
-    localStorage.setItem("spendr_theme", next);
-  }
 
   function selectCurrency(code: string) {
     setCurrency(code);
@@ -167,16 +151,9 @@ export default function Home() {
             <Logo className="h-7 w-auto" />
             <div className="flex items-center gap-2">
               <button
-                onClick={toggleTheme}
-                aria-label="Toggle theme"
-                className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-muted hover:text-white hover:border-white transition-colors"
-              >
-                {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
-              </button>
-              <button
                 onClick={() => signOut()}
                 aria-label="Sign out"
-                className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-muted hover:text-danger hover:border-danger/50 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
               >
                 <LogOut size={14} />
               </button>
@@ -189,7 +166,7 @@ export default function Home() {
             <div ref={currencyRef} className="relative">
               <button
                 onClick={() => setShowCurrencyPicker((v) => !v)}
-                className="flex items-center gap-1 h-8 px-3 rounded-full border border-border text-muted hover:text-white hover:border-white transition-colors text-xs font-mono"
+                className="flex items-center gap-1 h-8 px-3 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors text-xs font-mono"
               >
                 {currency}
                 <ChevronDown size={11} />
@@ -206,10 +183,10 @@ export default function Home() {
                 <button
                   key={c.code}
                   onClick={() => selectCurrency(c.code)}
-                  className={`w-full flex items-center justify-between px-4 py-3.5 text-sm transition-colors border-b border-border/50 last:border-0 ${
+                  className={`w-full flex items-center justify-between px-4 py-3.5 text-sm transition-colors border-b border-white/10 last:border-0 ${
                     currency === c.code
                       ? "text-accent bg-accent/10"
-                      : "text-white hover:bg-surface"
+                      : "text-white hover:bg-white/[0.07]"
                   }`}
                 >
                   <span className="font-mono font-semibold text-base">{c.code}</span>
@@ -222,7 +199,7 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <button
                 onClick={prevMonth}
-                className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-muted hover:text-white hover:border-white transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
               >
                 ‹
               </button>
@@ -231,7 +208,7 @@ export default function Home() {
               </span>
               <button
                 onClick={nextMonth}
-                className="w-8 h-8 flex items-center justify-center rounded-full border border-border text-muted hover:text-white hover:border-white transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
               >
                 ›
               </button>
@@ -249,14 +226,15 @@ export default function Home() {
         <AddExpenseForm userId={user.id} currency={currency} onExpenseAdded={fetchExpenses} />
 
         {/* Filter tabs */}
-        <div className="flex gap-1 bg-surface rounded-xl p-1 border border-border shadow-sm">
+        <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
+        <div className="flex gap-1 p-1 w-full">
           {filters.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => setFilter(key)}
               className={`flex-1 py-2 text-sm font-mono rounded-lg transition-colors ${
                 filter === key
-                  ? "bg-surface2 text-white font-semibold border border-border"
+                  ? "bg-white/10 backdrop-blur-md text-white font-semibold border border-white/15"
                   : "text-muted hover:text-white"
               }`}
             >
@@ -264,6 +242,7 @@ export default function Home() {
             </button>
           ))}
         </div>
+        </GlassSurface>
 
         {/* Expense list / loading / error */}
         <div key={filter} className="mt-4 animate-fade-slide-in">
@@ -296,18 +275,18 @@ function LoadingSkeleton() {
       {[0, 1].map((g) => (
         <div key={g}>
           <div className="flex justify-between mb-2 px-1">
-            <div className="h-3 w-16 bg-surface2 rounded" />
-            <div className="h-3 w-20 bg-surface2 rounded" />
+            <div className="h-3 w-16 bg-white/[0.07] rounded" />
+            <div className="h-3 w-20 bg-white/[0.07] rounded" />
           </div>
-          <div className="bg-surface rounded-xl border border-border overflow-hidden divide-y divide-border">
+          <div className="bg-white/[0.04] rounded-xl border border-white/[0.07] overflow-hidden divide-y divide-white/[0.08]">
             {[0, 1, 2].map((r) => (
               <div key={r} className="flex items-center gap-3 px-4 py-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-surface2 flex-shrink-0" />
+                <div className="w-2.5 h-2.5 rounded-full bg-white/[0.07] flex-shrink-0" />
                 <div className="flex-1 flex flex-col gap-1.5">
-                  <div className="h-3 w-2/3 bg-surface2 rounded" />
-                  <div className="h-2.5 w-1/4 bg-surface2 rounded-full" />
+                  <div className="h-3 w-2/3 bg-white/[0.07] rounded" />
+                  <div className="h-2.5 w-1/4 bg-white/[0.07] rounded-full" />
                 </div>
-                <div className="h-3 w-20 bg-surface2 rounded" />
+                <div className="h-3 w-20 bg-white/[0.07] rounded" />
               </div>
             ))}
           </div>

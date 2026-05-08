@@ -5,6 +5,7 @@ import { Trash2, Pencil, Check, X } from "lucide-react";
 import { deleteExpense, updateExpense } from "@/lib/supabase";
 import { formatAmount } from "@/lib/currencies";
 import { CATEGORY_COLORS } from "@/lib/categories";
+import GlassSurface from "@/components/GlassSurface";
 import type { Expense } from "@/types";
 
 const PRESET_CATEGORIES = Object.keys(CATEGORY_COLORS);
@@ -212,13 +213,14 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
               <span className="font-mono text-xs text-muted uppercase tracking-widest whitespace-nowrap">
                 {formatDateLabel(date)}
               </span>
-              <div className="flex-1 h-px bg-border" />
+              <div className="flex-1 h-px bg-white/[0.05]" />
               <span className="font-mono text-xs text-muted whitespace-nowrap">
                 {currency} {formatAmount(dayTotal, currency)}
               </span>
             </div>
 
-            <div className="bg-surface rounded-xl border border-border overflow-hidden divide-y divide-border shadow-sm">
+            <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
+            <div className="w-full divide-y divide-white/10">
               {dayExpenses.map((expense) => {
                 const isEditing = editingId === expense.id;
 
@@ -305,17 +307,11 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                       onTouchMove={(e) => onTouchMove(e, expense.id)}
                       onTouchEnd={() => onTouchEnd(expense.id, expense)}
                       onTouchCancel={() => snapBack(expense.id)}
-                      className="group relative flex items-center gap-3 px-4 py-3.5 bg-surface hover:bg-surface2 transition-colors"
+                      className="group relative flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors"
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-text text-sm font-sans truncate">{expense.description}</p>
-                        <span
-                          className="inline-block mt-0.5 text-xs font-mono px-1.5 py-0.5 rounded-full"
-                          style={{
-                            backgroundColor: `${categoryColor(expense.category)}18`,
-                            color: categoryColor(expense.category),
-                          }}
-                        >
+                        <span className="inline-block mt-0.5 text-xs font-mono px-1.5 py-0.5 rounded-full bg-white/[0.07] text-white/40">
                           {expense.category}
                         </span>
                       </div>
@@ -351,6 +347,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                 );
               })}
             </div>
+            </GlassSurface>
           </div>
         );
       })}

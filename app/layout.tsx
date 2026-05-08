@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
-import { DottedGlowBackground } from "@/components/DottedGlowBackground";
+import LightRays from "@/components/LightRays";
 import InstallPrompt from "@/components/InstallPrompt";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 
@@ -24,18 +24,19 @@ export default function RootLayout({
   return (
     <html lang="en" className={manrope.variable}>
       <body>
-        <div className="fixed inset-0 z-0">
-          <DottedGlowBackground
-            gap={14}
-            radius={0.9}
-            color="rgba(255,255,255,0.18)"
-            darkColor="rgba(255,255,255,0.18)"
-            glowColor="rgba(159,232,112,0.7)"
-            darkGlowColor="rgba(159,232,112,0.7)"
-            opacity={0.45}
-            speedMin={0.15}
-            speedMax={0.6}
-            speedScale={1}
+        <div className="fixed inset-0 z-0 bg-[#060e03]">
+          <LightRays
+            raysOrigin="top-center"
+            raysColor="#9FE870"
+            raysSpeed={1.2}
+            lightSpread={0.9}
+            rayLength={1.4}
+            followMouse={true}
+            mouseInfluence={0.12}
+            noiseAmount={0.08}
+            distortion={0.03}
+            fadeDistance={1.2}
+            saturation={0.9}
           />
         </div>
         {children}
