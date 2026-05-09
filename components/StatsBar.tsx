@@ -47,24 +47,40 @@ export default function StatsBar({ expenses, selectedMonth, currency, subscripti
     { label: "Avg/Day", value: formatAmount(avgPerDay, currency),  hero: false },
   ];
 
+  const [hero, ...rest] = stats;
+
   return (
-    <div className="grid grid-cols-3 gap-2">
-      {stats.map((stat) => (
-        <GlassSurface
-          key={stat.label}
-          borderRadius={28}
-          style={stat.hero ? { boxShadow: "0 0 12px rgba(159,232,112,0.07)", borderColor: "rgba(159,232,112,0.3)" } : undefined}
-        >
-          <div className="pt-4 pb-5 px-4 flex flex-col gap-2 w-full">
-            <span className="font-sans text-xs text-muted uppercase tracking-widest font-semibold truncate leading-none">
-              {stat.label}
-            </span>
-            <span className="font-mono text-xl sm:text-2xl font-bold text-white leading-tight">
-              {stat.value}
-            </span>
-          </div>
-        </GlassSurface>
-      ))}
+    <div className="flex flex-col gap-2">
+      {/* Hero stat — full width */}
+      <GlassSurface
+        borderRadius={28}
+        style={{ boxShadow: "0 0 12px rgba(159,232,112,0.07)", borderColor: "rgba(159,232,112,0.3)" }}
+      >
+        <div className="pt-4 pb-5 px-5 flex flex-col gap-1 w-full">
+          <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold leading-none">
+            {hero.label}
+          </span>
+          <span className="font-mono text-3xl font-bold text-white leading-tight">
+            {hero.value}
+          </span>
+        </div>
+      </GlassSurface>
+
+      {/* Secondary stats — side by side */}
+      <div className="grid grid-cols-2 gap-2">
+        {rest.map((stat) => (
+          <GlassSurface key={stat.label} borderRadius={28}>
+            <div className="pt-3 pb-4 px-4 flex flex-col gap-1 w-full">
+              <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold leading-none">
+                {stat.label}
+              </span>
+              <span className="font-mono text-xl font-bold text-white leading-tight">
+                {stat.value}
+              </span>
+            </div>
+          </GlassSurface>
+        ))}
+      </div>
     </div>
   );
 }

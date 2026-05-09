@@ -179,34 +179,17 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Row 2: Currency + View toggle + Month nav */}
+          {/* Row 2: Currency + Month nav */}
           <div className="flex items-center gap-2 w-full justify-between">
-            {/* Currency picker + view toggle */}
-            <div className="flex items-center gap-2">
-              <div ref={currencyRef} className="relative">
-                <button
-                  onClick={() => setShowCurrencyPicker((v) => !v)}
-                  className="flex items-center gap-1 h-8 px-3 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors text-xs font-mono"
-                >
-                  {currency}
-                  <ChevronDown size={11} />
-                </button>
-              </div>
-              <div className="flex items-center h-8 p-0.5 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md">
-                {(["expenses", "subscriptions"] as View[]).map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => setView(v)}
-                    className={`h-7 px-3 rounded-full text-xs font-mono transition-colors ${
-                      view === v
-                        ? "bg-white/15 text-white border border-white/15"
-                        : "text-white/40 hover:text-white/80"
-                    }`}
-                  >
-                    {v === "expenses" ? "Expenses" : "Subscriptions"}
-                  </button>
-                ))}
-              </div>
+            {/* Currency picker */}
+            <div ref={currencyRef} className="relative">
+              <button
+                onClick={() => setShowCurrencyPicker((v) => !v)}
+                className="flex items-center gap-1 h-8 px-3 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors text-xs font-mono"
+              >
+                {currency}
+                <ChevronDown size={11} />
+              </button>
             </div>
 
             <BottomDrawer
@@ -248,6 +231,22 @@ export default function Home() {
                 ›
               </button>
             </div>
+          </div>
+          {/* Row 3: View toggle (full width) */}
+          <div className="flex items-center h-10 p-0.5 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md w-full">
+            {(["expenses", "subscriptions"] as View[]).map((v) => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={`flex-1 h-9 rounded-full text-sm font-mono transition-colors ${
+                  view === v
+                    ? "bg-white/15 text-white border border-white/15"
+                    : "text-white/40 hover:text-white/80"
+                }`}
+              >
+                {v === "expenses" ? "Expenses" : "Subscriptions"}
+              </button>
+            ))}
           </div>
         </div>
 
