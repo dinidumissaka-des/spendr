@@ -60,7 +60,7 @@ export default function CategoryPicker({ open, selected, isCustom, onSelect }: P
             onClick={() => onSelect(cat)}
             onMouseEnter={(e) => gsap.to(e.currentTarget, { scale: 1.1, duration: 0.2, ease: "back.out(1.5)" })}
             onMouseLeave={(e) => gsap.to(e.currentTarget, { scale: 1, duration: 0.25, ease: "power2.out" })}
-            className="px-8 py-5 rounded-full text-xl font-bold border transition-colors"
+            className="px-5 py-3 sm:px-8 sm:py-5 rounded-full text-sm sm:text-xl font-bold border transition-colors"
             style={{
               opacity: 0,
               transform: "scale(0)",
