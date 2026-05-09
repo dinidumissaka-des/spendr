@@ -118,7 +118,7 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
       <div className="grid grid-cols-2 gap-2">
         <button
           type="button"
-          onClick={() => setShowCategoryDrawer((v) => !v)}
+          onClick={() => { setShowCategoryDrawer((v) => !v); setShowDateDrawer(false); }}
           className={`h-[52px] flex items-center justify-center px-4 rounded-full border backdrop-blur-md text-sm text-white transition-colors ${
             showCategoryDrawer
               ? "border-white/25 bg-white/10"
@@ -130,7 +130,7 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
 
         <button
           type="button"
-          onClick={() => setShowDateDrawer((v) => !v)}
+          onClick={() => { setShowDateDrawer((v) => !v); setShowCategoryDrawer(false); }}
           className={`h-[52px] flex items-center justify-center px-4 rounded-full border backdrop-blur-md text-sm text-white transition-colors ${
             showDateDrawer
               ? "border-white/25 bg-white/10"
