@@ -7,6 +7,7 @@ import { getExpensesByMonth, getSubscriptions, onAuthStateChange, signOut } from
 import type { Expense, Subscription } from "@/types";
 import { CURRENCIES, DEFAULT_CURRENCY } from "@/lib/currencies";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { Ripple } from "@/components/ui/ripple";
 import AddExpenseForm from "@/components/expense/AddExpenseForm";
 import GlassSurface from "@/components/GlassSurface";
 import Logo from "@/components/Logo";
@@ -143,7 +144,7 @@ export default function Home() {
   if (user === undefined) {
     return (
       <main className="relative z-10 min-h-screen flex items-center justify-center">
-        <span className="font-mono text-sm text-muted animate-pulse">Loading...</span>
+        <Ripple className="w-11 h-11 text-accent" />
       </main>
     );
   }
