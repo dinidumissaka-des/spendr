@@ -110,7 +110,7 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && amountRef.current?.focus()}
-          placeholder="e.g. Lunch at Nando's"
+          placeholder="Lunch at Nando's"
         />
       </div>
 
@@ -119,7 +119,7 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
         <button
           type="button"
           onClick={() => setShowCategoryDrawer((v) => !v)}
-          className={`h-[52px] flex items-center px-4 rounded-full border text-sm text-white transition-colors ${
+          className={`h-[52px] flex items-center px-4 rounded-full border backdrop-blur-md text-sm text-white transition-colors ${
             showCategoryDrawer
               ? "border-white/25 bg-white/10"
               : "border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10"
@@ -130,8 +130,12 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
 
         <button
           type="button"
-          onClick={() => setShowDateDrawer(true)}
-          className="h-[52px] flex items-center px-4 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-sm text-white transition-colors hover:border-white/25 hover:bg-white/10"
+          onClick={() => setShowDateDrawer((v) => !v)}
+          className={`h-[52px] flex items-center px-4 rounded-full border backdrop-blur-md text-sm text-white transition-colors ${
+            showDateDrawer
+              ? "border-white/25 bg-white/10"
+              : "border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10"
+          }`}
         >
           <span className="font-medium">{date}</span>
         </button>

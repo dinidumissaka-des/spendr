@@ -326,22 +326,23 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                         {formatAmount(Number(expense.amount), currency)}
                       </span>
 
-                      <button
-                        onClick={() => startEdit(expense)}
-                        aria-label="Edit expense"
-                        className="hidden sm:flex opacity-0 group-hover:opacity-100 flex-shrink-0 w-7 h-7 items-center justify-center rounded-md text-muted hover:text-white transition-all"
-                      >
-                        <Pencil size={13} />
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete(expense.id)}
-                        disabled={deletingId === expense.id}
-                        aria-label="Delete expense"
-                        className="hidden sm:flex opacity-0 group-hover:opacity-100 flex-shrink-0 w-7 h-7 items-center justify-center rounded-md text-muted hover:text-danger disabled:opacity-30 transition-all"
-                      >
-                        {deletingId === expense.id ? <span className="text-sm">…</span> : <Trash2 size={13} />}
-                      </button>
+                      <div className="hidden sm:flex gap-1 overflow-hidden w-0 group-hover:w-[60px] transition-all duration-200 flex-shrink-0">
+                        <button
+                          onClick={() => startEdit(expense)}
+                          aria-label="Edit expense"
+                          className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-white transition-colors flex-shrink-0"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(expense.id)}
+                          disabled={deletingId === expense.id}
+                          aria-label="Delete expense"
+                          className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-danger disabled:opacity-30 transition-colors flex-shrink-0"
+                        >
+                          {deletingId === expense.id ? <span className="text-sm">…</span> : <Trash2 size={13} />}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
