@@ -14,6 +14,11 @@ function todayISO() {
   return new Date().toISOString().split("T")[0];
 }
 
+function daysElapsedInMonth(year: number, month: number, isCurrentMonth: boolean): number {
+  if (isCurrentMonth) return Math.max(new Date().getDate(), 1);
+  return new Date(year, month, 0).getDate();
+}
+
 interface Stat {
   label: string;
   value: string;
@@ -32,10 +37,13 @@ export default function StatsBar({ expenses, selectedMonth, currency }: Props) {
     .filter((e) => e.date === today)
     .reduce((sum, e) => sum + Number(e.amount), 0);
 
+  const days = daysElapsedInMonth(selectedMonth.year, selectedMonth.month, isCurrentMonth);
+  const avgPerDay = expenses.length > 0 ? monthTotal / days : 0;
+
   const stats: Stat[] = [
     { label: isCurrentMonth ? "This Month" : "Month Total", value: formatAmount(monthTotal, currency), hero: true },
-    { label: "Today",  value: formatAmount(todayTotal, currency), hero: false },
-    { label: "Txns",   value: String(expenses.length),           hero: false },
+    { label: "Today",   value: formatAmount(todayTotal, currency), hero: false },
+    { label: "Avg/Day", value: formatAmount(avgPerDay, currency),  hero: false },
   ];
 
   return (
