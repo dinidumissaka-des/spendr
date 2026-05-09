@@ -23,8 +23,8 @@ export const metadata: Metadata = {
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   icons: {
-    icon: "/favicon.png",
-    apple: "/apple-icon.png",
+    icon: "/minti-favicon.png",
+    apple: "/minti-favicon.png",
   },
 };
 
