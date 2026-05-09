@@ -15,11 +15,11 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Minti",
-  description: "Personal expense tracker",
+  title: "Minti | Personal expense tracker",
+  description: "Track your daily expenses and subscriptions, set budgets, and stay on top of your spending — all in one place.",
   openGraph: {
-    title: "Minti",
-    description: "Personal expense tracker",
+    title: "Minti | Personal expense tracker",
+    description: "Track your daily expenses and subscriptions, set budgets, and stay on top of your spending — all in one place.",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   icons: {
