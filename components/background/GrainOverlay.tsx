@@ -55,7 +55,7 @@ export default function GrainOverlay() {
         zIndex: 9999,
         pointerEvents: "none",
         mixBlendMode: "screen",
-        opacity: 0.12,
+        opacity: 0.06,
         imageRendering: "pixelated",
       }}
     />
