@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import dynamic from "next/dynamic";
 import "./globals.css";
@@ -13,6 +13,11 @@ const manrope = Manrope({
   variable: "--font-manrope",
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  viewportFit: "cover",
+  themeColor: "#060e03",
+};
 
 export const metadata: Metadata = {
   title: "Minti | Personal expense tracker",
