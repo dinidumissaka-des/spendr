@@ -153,12 +153,14 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
         />
       )}
 
-      <DatePickerDrawer
-        open={showDateDrawer}
-        onClose={() => setShowDateDrawer(false)}
-        value={date}
-        onChange={setDate}
-      />
+      {showDateDrawer && (
+        <DatePickerDrawer
+          open={showDateDrawer}
+          value={date}
+          onChange={setDate}
+          onClose={() => setShowDateDrawer(false)}
+        />
+      )}
 
       {isCustom && (
         <div className="flex flex-col gap-2">
