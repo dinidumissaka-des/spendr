@@ -150,8 +150,8 @@ export default function Home() {
 
   if (user === null) {
     return (
-      <main className="relative z-10 min-h-screen flex items-center justify-center text-text px-4">
-        <div className="w-full max-w-sm">
+      <main className="relative z-10 text-text sm:min-h-screen sm:flex sm:items-center sm:justify-center sm:px-4">
+        <div className="w-full sm:max-w-sm">
           <AuthForm />
         </div>
       </main>

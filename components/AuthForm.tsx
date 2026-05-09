@@ -37,11 +37,9 @@ export default function AuthForm() {
     }
   }
 
-  const inputClass = "";
-
   if (signUpDone) {
     return (
-      <div className="bg-surface rounded-2xl border border-border p-8 flex flex-col gap-3 text-center">
+      <div className="flex flex-col items-center justify-center min-h-[100dvh] px-6 gap-3 text-center sm:min-h-0 sm:bg-white/[0.07] sm:rounded-2xl sm:border sm:border-white/[0.1] sm:p-8">
         <p className="font-sans font-semibold text-xl text-white">Check your email</p>
         <p className="font-sans text-base text-muted">
           We sent a confirmation link to <span className="text-white font-medium">{email}</span>.
@@ -57,7 +55,11 @@ export default function AuthForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-surface rounded-2xl border border-border p-8 flex flex-col gap-5">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col min-h-[100dvh] px-6 pt-16 pb-10 sm:min-h-0 sm:bg-white/[0.07] sm:rounded-2xl sm:border sm:border-white/[0.1] sm:p-8 sm:gap-5"
+    >
+      {/* Logo + title */}
       <div className="flex items-center gap-3">
         <Logo className="h-5 w-auto flex-shrink-0" />
         <span className="text-white/20">•</span>
@@ -66,48 +68,48 @@ export default function AuthForm() {
         </h2>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Email</Label>
-        <Input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
-          className={inputClass}
-        />
+      {/* Inputs — vertically centered on mobile, normal flow on desktop */}
+      <div className="flex-1 flex flex-col justify-center gap-5 sm:flex-none">
+        <div className="flex flex-col gap-2">
+          <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Email</Label>
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Password</Label>
+          <Input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+          />
+        </div>
+
+        {error && <p className="text-danger text-sm font-mono">{error}</p>}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Password</Label>
-        <Input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-          className={inputClass}
-        />
+      {/* CTA — pinned to bottom on mobile, normal flow on desktop */}
+      <div className="flex flex-col gap-4">
+        <Button type="submit" disabled={submitting} className="w-full">
+          {submitting ? "..." : mode === "signin" ? "Sign In" : "Sign Up"}
+        </Button>
+
+        <p className="text-center text-sm font-mono text-muted">
+          {mode === "signin" ? "No account?" : "Already have one?"}{" "}
+          <button
+            type="button"
+            onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(null); }}
+            className="text-accent underline hover:text-accent/80"
+          >
+            {mode === "signin" ? "Sign up" : "Sign in"}
+          </button>
+        </p>
       </div>
-
-      {error && <p className="text-danger text-sm font-mono">{error}</p>}
-
-      <Button
-        type="submit"
-        disabled={submitting}
-        className="w-full"
-      >
-        {submitting ? "..." : mode === "signin" ? "Sign In" : "Sign Up"}
-      </Button>
-
-      <p className="text-center text-sm font-mono text-muted">
-        {mode === "signin" ? "No account?" : "Already have one?"}{" "}
-        <button
-          type="button"
-          onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(null); }}
-          className="text-accent underline hover:text-accent/80"
-        >
-          {mode === "signin" ? "Sign up" : "Sign in"}
-        </button>
-      </p>
     </form>
   );
 }
