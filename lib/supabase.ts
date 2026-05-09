@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
-import type { Expense, NewExpense } from '@/types';
+import type { Expense, NewExpense, Subscription, NewSubscription } from '@/types';
 
 let _client: SupabaseClient | null = null;
 
@@ -70,5 +70,34 @@ export async function deleteExpense(id: string): Promise<void> {
 
 export async function updateExpense(id: string, data: Partial<Omit<Expense, 'id' | 'created_at'>>): Promise<void> {
   const { error } = await getClient().from('expenses').update(data).eq('id', id);
+  if (error) throw error;
+}
+
+export async function getSubscriptions(): Promise<Subscription[]> {
+  const { data, error } = await getClient()
+    .from('subscriptions')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function addSubscription(data: NewSubscription, userId: string): Promise<Subscription> {
+  const { data: inserted, error } = await getClient()
+    .from('subscriptions')
+    .insert([{ ...data, user_id: userId }])
+    .select()
+    .single();
+  if (error) throw error;
+  return inserted;
+}
+
+export async function deleteSubscription(id: string): Promise<void> {
+  const { error } = await getClient().from('subscriptions').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function updateSubscription(id: string, data: Partial<NewSubscription>): Promise<void> {
+  const { error } = await getClient().from('subscriptions').update(data).eq('id', id);
   if (error) throw error;
 }

@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { LogOut, ChevronDown } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
-import { getExpensesByMonth, onAuthStateChange, signOut } from "@/lib/supabase";
-import type { Expense } from "@/types";
+import { getExpensesByMonth, getSubscriptions, onAuthStateChange, signOut } from "@/lib/supabase";
+import type { Expense, Subscription } from "@/types";
 import { CURRENCIES, DEFAULT_CURRENCY } from "@/lib/currencies";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import AddExpenseForm from "@/components/AddExpenseForm";
@@ -14,9 +14,11 @@ import AuthForm from "@/components/AuthForm";
 import StatsBar from "@/components/StatsBar";
 import BudgetBar from "@/components/BudgetBar";
 import ExpenseList from "@/components/ExpenseList";
+import SubscriptionList from "@/components/SubscriptionList";
 import BottomDrawer from "@/components/BottomDrawer";
 
 type Filter = "all" | "today" | "week";
+type View = "expenses" | "subscriptions";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -42,9 +44,11 @@ export default function Home() {
     month: now.getMonth() + 1,
   });
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
+  const [view, setView] = useState<View>("expenses");
   const [currency, setCurrency] = useState<string>(DEFAULT_CURRENCY);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const currencyRef = useRef<HTMLDivElement>(null);
@@ -91,9 +95,22 @@ export default function Home() {
     }
   }, [selectedMonth]);
 
+  const fetchSubscriptions = useCallback(async () => {
+    try {
+      const data = await getSubscriptions();
+      setSubscriptions(data);
+    } catch {
+      // silently fail; subscriptions are non-critical on load
+    }
+  }, []);
+
   useEffect(() => {
     fetchExpenses();
   }, [fetchExpenses]);
+
+  useEffect(() => {
+    if (user) fetchSubscriptions();
+  }, [user, fetchSubscriptions]);
 
   function prevMonth() {
     setSelectedMonth(({ year, month }) => {
@@ -114,6 +131,8 @@ export default function Home() {
     if (filter === "week") return e.date >= startOfWeekISO();
     return true;
   });
+
+  const subscriptionsTotal = subscriptions.reduce((s, sub) => s + Number(sub.amount), 0);
 
   const filters: { key: Filter; label: string }[] = [
     { key: "all",   label: "All"       },
@@ -160,18 +179,34 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Row 2: Currency + Month nav */}
+          {/* Row 2: Currency + View toggle + Month nav */}
           <div className="flex items-center gap-2 w-full justify-between">
-            {/* Currency picker */}
-            <div ref={currencyRef} className="relative">
-              <button
-                onClick={() => setShowCurrencyPicker((v) => !v)}
-                className="flex items-center gap-1 h-8 px-3 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors text-xs font-mono"
-              >
-                {currency}
-                <ChevronDown size={11} />
-              </button>
-
+            {/* Currency picker + view toggle */}
+            <div className="flex items-center gap-2">
+              <div ref={currencyRef} className="relative">
+                <button
+                  onClick={() => setShowCurrencyPicker((v) => !v)}
+                  className="flex items-center gap-1 h-8 px-3 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors text-xs font-mono"
+                >
+                  {currency}
+                  <ChevronDown size={11} />
+                </button>
+              </div>
+              <div className="flex items-center h-8 p-0.5 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md">
+                {(["expenses", "subscriptions"] as View[]).map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setView(v)}
+                    className={`h-7 px-3 rounded-full text-xs font-mono transition-colors ${
+                      view === v
+                        ? "bg-white/15 text-white border border-white/15"
+                        : "text-white/40 hover:text-white/80"
+                    }`}
+                  >
+                    {v === "expenses" ? "Expenses" : "Subscriptions"}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <BottomDrawer
@@ -217,53 +252,64 @@ export default function Home() {
         </div>
 
         {/* Stats */}
-        <StatsBar expenses={expenses} selectedMonth={selectedMonth} currency={currency} />
+        <StatsBar expenses={expenses} selectedMonth={selectedMonth} currency={currency} subscriptionsTotal={subscriptionsTotal} />
 
         {/* Budget */}
-        <BudgetBar spent={expenses.reduce((s, e) => s + Number(e.amount), 0)} currency={currency} />
+        <BudgetBar spent={expenses.reduce((s, e) => s + Number(e.amount), 0) + subscriptionsTotal} currency={currency} />
 
-        {/* Add form */}
-        <AddExpenseForm userId={user.id} currency={currency} onExpenseAdded={fetchExpenses} />
+        {view === "expenses" ? (
+          <>
+            {/* Add form */}
+            <AddExpenseForm userId={user.id} currency={currency} onExpenseAdded={fetchExpenses} />
 
-        {/* Filter tabs */}
-        <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
-        <div className="flex gap-1 p-1 w-full">
-          {filters.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setFilter(key)}
-              className={`flex-1 py-2 text-sm font-mono rounded-lg transition-colors ${
-                filter === key
-                  ? "bg-white/10 backdrop-blur-md text-white font-semibold border border-white/15"
-                  : "text-muted hover:text-white"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        </GlassSurface>
+            {/* Filter tabs */}
+            <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
+              <div className="flex gap-1 p-1 w-full">
+                {filters.map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setFilter(key)}
+                    className={`flex-1 py-2 text-sm font-mono rounded-lg transition-colors ${
+                      filter === key
+                        ? "bg-white/10 backdrop-blur-md text-white font-semibold border border-white/15"
+                        : "text-muted hover:text-white"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </GlassSurface>
 
-        {/* Expense list / loading / error */}
-        <div key={filter} className="mt-4 animate-fade-slide-in">
-        {fetchError ? (
-          <div className="bg-surface rounded-xl border border-danger/40 p-5 text-center">
-            <p className="text-danger font-mono text-sm">{fetchError}</p>
-            <button onClick={fetchExpenses} className="mt-3 text-xs font-mono text-muted underline hover:text-white">
-              Retry
-            </button>
-          </div>
-        ) : loading ? (
-          <LoadingSkeleton />
+            {/* Expense list / loading / error */}
+            <div key={filter} className="animate-fade-slide-in">
+              {fetchError ? (
+                <div className="bg-surface rounded-xl border border-danger/40 p-5 text-center">
+                  <p className="text-danger font-mono text-sm">{fetchError}</p>
+                  <button onClick={fetchExpenses} className="mt-3 text-xs font-mono text-muted underline hover:text-white">
+                    Retry
+                  </button>
+                </div>
+              ) : loading ? (
+                <LoadingSkeleton />
+              ) : (
+                <ExpenseList
+                  expenses={filteredExpenses}
+                  onDeleted={fetchExpenses}
+                  onUpdated={fetchExpenses}
+                  currency={currency}
+                />
+              )}
+            </div>
+          </>
         ) : (
-          <ExpenseList
-            expenses={filteredExpenses}
-            onDeleted={fetchExpenses}
-            onUpdated={fetchExpenses}
+          <SubscriptionList
+            subscriptions={subscriptions}
+            userId={user.id}
             currency={currency}
+            onChanged={fetchSubscriptions}
           />
         )}
-        </div>
       </div>
     </main>
   );

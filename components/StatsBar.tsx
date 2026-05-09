@@ -8,6 +8,7 @@ interface Props {
   expenses: Expense[];
   selectedMonth: { year: number; month: number };
   currency: string;
+  subscriptionsTotal?: number;
 }
 
 function todayISO() {
@@ -25,14 +26,14 @@ interface Stat {
   hero: boolean;
 }
 
-export default function StatsBar({ expenses, selectedMonth, currency }: Props) {
+export default function StatsBar({ expenses, selectedMonth, currency, subscriptionsTotal = 0 }: Props) {
   const today = todayISO();
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
   const isCurrentMonth =
     selectedMonth.month === currentMonth && selectedMonth.year === currentYear;
 
-  const monthTotal = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+  const monthTotal = expenses.reduce((sum, e) => sum + Number(e.amount), 0) + subscriptionsTotal;
   const todayTotal = expenses
     .filter((e) => e.date === today)
     .reduce((sum, e) => sum + Number(e.amount), 0);

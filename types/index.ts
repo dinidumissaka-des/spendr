@@ -9,3 +9,14 @@ export type Expense = {
 };
 
 export type NewExpense = Omit<Expense, 'id' | 'created_at'>;
+
+export type Subscription = {
+  id: string;
+  name: string;
+  amount: number;
+  category: string;
+  billing_day: number;
+  created_at: string;
+};
+
+export type NewSubscription = Omit<Subscription, 'id' | 'created_at'>;
