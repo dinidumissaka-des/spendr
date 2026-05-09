@@ -5,6 +5,7 @@ import { signIn, signUp } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Logo from "@/components/Logo";
 
 export default function AuthForm() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -57,9 +58,13 @@ export default function AuthForm() {
 
   return (
     <form onSubmit={handleSubmit} className="bg-surface rounded-2xl border border-border p-8 flex flex-col gap-5">
-      <h2 className="font-sans font-semibold text-2xl text-white">
-        {mode === "signin" ? "Sign in" : "Create an account"}
-      </h2>
+      <div className="flex items-center gap-3">
+        <Logo className="h-5 w-auto flex-shrink-0" />
+        <span className="text-white/20">•</span>
+        <h2 className="font-sans font-semibold text-xl text-white">
+          {mode === "signin" ? "Sign in" : "Sign up"}
+        </h2>
+      </div>
 
       <div className="flex flex-col gap-2">
         <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Email</Label>
