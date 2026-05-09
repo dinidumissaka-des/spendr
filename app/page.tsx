@@ -255,9 +255,6 @@ export default function Home() {
         {/* Stats */}
         <StatsBar expenses={expenses} selectedMonth={selectedMonth} currency={currency} subscriptionsTotal={subscriptionsTotal} />
 
-        {/* Budget */}
-        <BudgetBar spent={expenses.reduce((s, e) => s + Number(e.amount), 0) + subscriptionsTotal} currency={currency} />
-
         {view === "expenses" ? (
           <>
             {/* Add form */}
@@ -282,6 +279,9 @@ export default function Home() {
               </div>
             </GlassSurface>
 
+            {/* Budget */}
+            <BudgetBar spent={expenses.reduce((s, e) => s + Number(e.amount), 0) + subscriptionsTotal} currency={currency} />
+
             {/* Expense list / loading / error */}
             <div key={filter} className="animate-fade-slide-in">
               {fetchError ? (
@@ -304,12 +304,15 @@ export default function Home() {
             </div>
           </>
         ) : (
-          <SubscriptionList
-            subscriptions={subscriptions}
-            userId={user.id}
-            currency={currency}
-            onChanged={fetchSubscriptions}
-          />
+          <>
+            <BudgetBar spent={expenses.reduce((s, e) => s + Number(e.amount), 0) + subscriptionsTotal} currency={currency} />
+            <SubscriptionList
+              subscriptions={subscriptions}
+              userId={user.id}
+              currency={currency}
+              onChanged={fetchSubscriptions}
+            />
+          </>
         )}
       </div>
     </main>
