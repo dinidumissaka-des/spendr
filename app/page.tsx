@@ -150,9 +150,9 @@ export default function Home() {
 
   if (user === null) {
     return (
-      <main className="relative z-10 min-h-screen text-text">
-        <div className="max-w-sm mx-auto px-4 py-20">
-          <Logo className="h-7 w-auto mx-auto mb-8" />
+      <main className="relative z-10 min-h-screen flex items-center justify-center text-text px-4">
+        <div className="w-full max-w-sm flex flex-col gap-8">
+          <Logo className="h-7 w-auto mx-auto" />
           <AuthForm />
         </div>
       </main>
