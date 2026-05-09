@@ -45,7 +45,7 @@ export default function InstallPrompt() {
   if (dismissed) return null;
 
   return (
-    <div className="fixed bottom-6 left-4 right-4 max-w-2xl mx-auto z-50 bg-surface2 border border-border rounded-2xl px-4 py-4 shadow-xl flex items-start gap-3 animate-fade-slide-in">
+    <div className="fixed bottom-6 left-4 right-4 max-w-2xl mx-auto z-50 bg-[#111a0d]/90 backdrop-blur-xl border border-white/[0.12] rounded-2xl px-4 py-4 shadow-xl flex items-start gap-3 animate-fade-slide-in">
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-white">Add Spendr to Home Screen</p>
         {isIOS ? (

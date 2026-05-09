@@ -5,8 +5,8 @@ import { Plus, Loader2 } from "lucide-react";
 import { addExpense } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import DatePickerDrawer from "@/components/DatePickerDrawer";
-import CategoryPicker from "@/components/CategoryPicker";
+import DatePickerDrawer from "@/components/expense/DatePickerDrawer";
+import CategoryPicker from "@/components/expense/CategoryPicker";
 import GlassSurface from "@/components/GlassSurface";
 import { CATEGORY_COLORS } from "@/lib/categories";
 
@@ -115,23 +115,23 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
       </div>
 
       {/* Category + Date row */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="grid grid-cols-2 gap-2">
         <button
           type="button"
           onClick={() => setShowCategoryDrawer((v) => !v)}
-          className={`h-[52px] flex items-center px-4 rounded-full border backdrop-blur-md text-sm text-white transition-colors ${
+          className={`h-[52px] flex items-center justify-center px-4 rounded-full border backdrop-blur-md text-sm text-white transition-colors ${
             showCategoryDrawer
               ? "border-white/25 bg-white/10"
               : "border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10"
           }`}
         >
-          <span className="font-medium">{isCustom ? (customCategory.trim() || "Custom") : category}</span>
+          <span className="font-medium truncate">{isCustom ? (customCategory.trim() || "Custom") : category}</span>
         </button>
 
         <button
           type="button"
           onClick={() => setShowDateDrawer((v) => !v)}
-          className={`h-[52px] flex items-center px-4 rounded-full border backdrop-blur-md text-sm text-white transition-colors ${
+          className={`h-[52px] flex items-center justify-center px-4 rounded-full border backdrop-blur-md text-sm text-white transition-colors ${
             showDateDrawer
               ? "border-white/25 bg-white/10"
               : "border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10"

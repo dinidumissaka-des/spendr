@@ -6,7 +6,7 @@ import { addSubscription, deleteSubscription, updateSubscription } from "@/lib/s
 import { formatAmount } from "@/lib/currencies";
 import { CATEGORY_COLORS } from "@/lib/categories";
 import GlassSurface from "@/components/GlassSurface";
-import CategoryPicker from "@/components/CategoryPicker";
+import CategoryPicker from "@/components/expense/CategoryPicker";
 import type { Subscription, NewSubscription } from "@/types";
 
 const PRESET_CATEGORIES = Object.keys(CATEGORY_COLORS);

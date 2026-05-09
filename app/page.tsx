@@ -7,14 +7,14 @@ import { getExpensesByMonth, getSubscriptions, onAuthStateChange, signOut } from
 import type { Expense, Subscription } from "@/types";
 import { CURRENCIES, DEFAULT_CURRENCY } from "@/lib/currencies";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import AddExpenseForm from "@/components/AddExpenseForm";
+import AddExpenseForm from "@/components/expense/AddExpenseForm";
 import GlassSurface from "@/components/GlassSurface";
 import Logo from "@/components/Logo";
 import AuthForm from "@/components/AuthForm";
 import StatsBar from "@/components/StatsBar";
 import BudgetBar from "@/components/BudgetBar";
-import ExpenseList from "@/components/ExpenseList";
-import SubscriptionList from "@/components/SubscriptionList";
+import ExpenseList from "@/components/expense/ExpenseList";
+import SubscriptionList from "@/components/subscription/SubscriptionList";
 import BottomDrawer from "@/components/BottomDrawer";
 
 type Filter = "all" | "today" | "week";
@@ -268,7 +268,7 @@ export default function Home() {
                   <button
                     key={key}
                     onClick={() => setFilter(key)}
-                    className={`flex-1 py-2 text-sm font-mono rounded-lg transition-colors ${
+                    className={`flex-1 py-2 text-sm font-mono rounded-full transition-colors ${
                       filter === key
                         ? "bg-white/10 backdrop-blur-md text-white font-semibold border border-white/15"
                         : "text-muted hover:text-white"

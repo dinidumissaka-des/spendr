@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
-import LightRays from "@/components/LightRays";
+import LightRays from "@/components/background/LightRays";
+import GrainOverlay from "@/components/background/GrainOverlay";
 import InstallPrompt from "@/components/InstallPrompt";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 
@@ -40,6 +41,7 @@ export default function RootLayout({
           />
         </div>
         {children}
+        <GrainOverlay />
         <InstallPrompt />
         <ServiceWorkerRegistration />
       </body>
