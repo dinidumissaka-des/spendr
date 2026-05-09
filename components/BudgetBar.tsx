@@ -17,7 +17,7 @@ export default function BudgetBar({ spent, currency }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem("spendr_budget");
+    const saved = localStorage.getItem("minti_budget");
     if (saved) setBudget(parseFloat(saved));
   }, []);
 
@@ -34,7 +34,7 @@ export default function BudgetBar({ spent, currency }: Props) {
     const parsed = parseFloat(input);
     if (!isNaN(parsed) && parsed > 0) {
       setBudget(parsed);
-      localStorage.setItem("spendr_budget", String(parsed));
+      localStorage.setItem("minti_budget", String(parsed));
     }
     setEditing(false);
   }

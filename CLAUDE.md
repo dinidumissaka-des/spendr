@@ -1,4 +1,4 @@
-# Spendr — Claude Project Context
+# Minti — Claude Project Context
 
 ## What this is
 A mobile-first personal expense tracker PWA. Users log daily expenses and recurring subscriptions, track against a monthly budget, and switch currencies. Primary audience is mobile users.

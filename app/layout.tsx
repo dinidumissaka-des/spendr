@@ -13,8 +13,17 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Spendr",
+  title: "Minti",
   description: "Personal expense tracker",
+  openGraph: {
+    title: "Minti",
+    description: "Personal expense tracker",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
+  icons: {
+    icon: "/favicon.png",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({

@@ -9,7 +9,7 @@ export default function InstallPrompt() {
   const [dismissed, setDismissed] = useState(true); // hidden until ready
 
   useEffect(() => {
-    if (localStorage.getItem("spendr_install_dismissed")) return;
+    if (localStorage.getItem("minti_install_dismissed")) return;
 
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !(window as unknown as Record<string, unknown>).MSStream;
     const standalone = window.matchMedia("(display-mode: standalone)").matches;
@@ -31,7 +31,7 @@ export default function InstallPrompt() {
   }, []);
 
   function dismiss() {
-    localStorage.setItem("spendr_install_dismissed", "1");
+    localStorage.setItem("minti_install_dismissed", "1");
     setDismissed(true);
   }
 
@@ -47,7 +47,7 @@ export default function InstallPrompt() {
   return (
     <div className="fixed bottom-6 left-4 right-4 max-w-2xl mx-auto z-50 bg-[#111a0d]/90 backdrop-blur-xl border border-white/[0.12] rounded-2xl px-4 py-4 shadow-xl flex items-start gap-3 animate-fade-slide-in">
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-white">Add Spendr to Home Screen</p>
+        <p className="text-sm font-semibold text-white">Add Minti to Home Screen</p>
         {isIOS ? (
           <p className="text-xs text-muted mt-1 flex items-center gap-1 flex-wrap">
             Tap <Share size={11} className="inline text-accent" /> then

@@ -56,13 +56,13 @@ export default function Home() {
 
   // Persist currency to localStorage
   useEffect(() => {
-    const saved = localStorage.getItem("spendr_currency");
+    const saved = localStorage.getItem("minti_currency");
     if (saved) setCurrency(saved);
   }, []);
 
   function selectCurrency(code: string) {
     setCurrency(code);
-    localStorage.setItem("spendr_currency", code);
+    localStorage.setItem("minti_currency", code);
     setShowCurrencyPicker(false);
   }
 
