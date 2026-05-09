@@ -56,10 +56,23 @@ const config: Config = {
           "0%":   { transform: "rotate(0deg)" },
           "100%": { transform: "rotate(360deg)" },
         },
+        fluidBg: {
+          "0%":   { backgroundPosition: "0% 50%" },
+          "50%":  { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" },
+        },
+        glassSheen: {
+          "0%":   { transform: "translateX(-100%) skewX(-15deg)", opacity: "0" },
+          "30%":  { opacity: "1" },
+          "70%":  { opacity: "1" },
+          "100%": { transform: "translateX(300%) skewX(-15deg)", opacity: "0" },
+        },
       },
       animation: {
         "fade-slide-in": "fadeSlideIn 220ms ease-out both",
         spin: "spin 3s linear infinite",
+        "fluid-bg": "fluidBg 4s ease infinite",
+        "glass-sheen": "glassSheen 3.5s ease-in-out infinite",
       },
     },
   },

@@ -64,12 +64,17 @@ function Button({ className, variant, size, children, ...props }: ButtonProps) {
         <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_75%,#ffffff_100%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         {/* Accent bg overlay that hides shimmer when not hovered */}
         <span className="absolute inset-0 rounded-full bg-accent transition-opacity duration-300 group-hover:opacity-0" />
-        {/* Content */}
+        {/* Content with fluid glassy interior */}
         <span className={cn(
-          "relative flex w-full h-full items-center justify-center gap-2 rounded-full bg-accent font-semibold text-[#163300] whitespace-nowrap select-none",
+          "relative flex w-full h-full items-center justify-center gap-2 rounded-full font-semibold text-[#163300] whitespace-nowrap select-none overflow-hidden",
+          "bg-[linear-gradient(135deg,#9FE870_0%,#c8f7a0_35%,#78d955_65%,#9FE870_100%)] bg-[length:250%_250%] animate-fluid-bg",
           sizeInnerClass[resolvedSize]
         )}>
-          {children}
+          {/* Glass highlight sheen */}
+          <span className="absolute inset-0 w-1/3 bg-[linear-gradient(105deg,transparent,rgba(255,255,255,0.45),transparent)] animate-glass-sheen pointer-events-none" />
+          {/* Top glass reflection */}
+          <span className="absolute inset-x-0 top-0 h-[45%] rounded-t-full bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,transparent_100%)] pointer-events-none" />
+          <span className="relative z-10 flex items-center gap-2">{children}</span>
         </span>
       </button>
     );
