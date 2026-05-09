@@ -2,6 +2,19 @@
 "use client";
 
 import { useEffect, useState, useRef, useId } from "react";
+
+let _svgSupported: boolean | null = null;
+function svgFiltersSupported(): boolean {
+  if (_svgSupported !== null) return _svgSupported;
+  if (typeof window === "undefined") return false;
+  const isWebkit = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+  const isFirefox = /Firefox/.test(navigator.userAgent);
+  if (isWebkit || isFirefox) { _svgSupported = false; return false; }
+  const div = document.createElement("div");
+  div.style.backdropFilter = "url(#test)";
+  _svgSupported = div.style.backdropFilter !== "";
+  return _svgSupported;
+}
 import "./GlassSurface.css";
 
 interface Props {
@@ -116,9 +129,13 @@ export default function GlassSurface({
 
   useEffect(() => {
     if (!containerRef.current) return;
-    const ro = new ResizeObserver(() => setTimeout(updateDisplacementMap, 0));
+    let timer: ReturnType<typeof setTimeout>;
+    const ro = new ResizeObserver(() => {
+      clearTimeout(timer);
+      timer = setTimeout(updateDisplacementMap, 150);
+    });
     ro.observe(containerRef.current);
-    return () => ro.disconnect();
+    return () => { ro.disconnect(); clearTimeout(timer); };
   }, []);
 
   useEffect(() => {
@@ -126,16 +143,7 @@ export default function GlassSurface({
   }, [width, height]);
 
   useEffect(() => {
-    const supportsSVGFilters = () => {
-      if (typeof window === "undefined") return false;
-      const isWebkit = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-      const isFirefox = /Firefox/.test(navigator.userAgent);
-      if (isWebkit || isFirefox) return false;
-      const div = document.createElement("div");
-      div.style.backdropFilter = `url(#${filterId})`;
-      return div.style.backdropFilter !== "";
-    };
-    setSvgSupported(supportsSVGFilters());
+    setSvgSupported(svgFiltersSupported());
   }, []);
 
   const containerStyle = {

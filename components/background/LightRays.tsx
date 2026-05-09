@@ -173,7 +173,9 @@ export default function LightRays({
       await new Promise((r) => setTimeout(r, 10));
       if (!containerRef.current) return;
 
-      const renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio, 2), alpha: true });
+      const isTouchOnly = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+      const dprCap = isTouchOnly ? 1 : 1.5;
+      const renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio, dprCap), alpha: true });
       rendererRef.current = renderer;
       const gl = renderer.gl;
       gl.canvas.style.width = "100%";
@@ -206,7 +208,7 @@ export default function LightRays({
 
       const updatePlacement = () => {
         if (!containerRef.current || !renderer) return;
-        renderer.dpr = Math.min(window.devicePixelRatio, 2);
+        renderer.dpr = Math.min(window.devicePixelRatio, dprCap);
         const { clientWidth: wCSS, clientHeight: hCSS } = containerRef.current;
         renderer.setSize(wCSS, hCSS);
         const dpr = renderer.dpr;
@@ -221,7 +223,7 @@ export default function LightRays({
       const loop = (t: number) => {
         if (!rendererRef.current || !uniformsRef.current) return;
         uniforms.iTime.value = t * 0.001;
-        if (followMouse && mouseInfluence > 0) {
+        if (followMouse && mouseInfluence > 0 && !isTouchOnly) {
           const s = 0.92;
           smoothMouseRef.current.x = smoothMouseRef.current.x * s + mouseRef.current.x * (1 - s);
           smoothMouseRef.current.y = smoothMouseRef.current.y * s + mouseRef.current.y * (1 - s);

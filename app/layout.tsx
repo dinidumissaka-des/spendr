@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
+import dynamic from "next/dynamic";
 import "./globals.css";
-import LightRays from "@/components/background/LightRays";
-import GrainOverlay from "@/components/background/GrainOverlay";
 import InstallPrompt from "@/components/InstallPrompt";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+
+const LightRays = dynamic(() => import("@/components/background/LightRays"), { ssr: false });
+const GrainOverlay = dynamic(() => import("@/components/background/GrainOverlay"), { ssr: false });
 
 const manrope = Manrope({
   subsets: ["latin"],
