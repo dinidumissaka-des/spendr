@@ -8,6 +8,7 @@ import type { Expense, Subscription } from "@/types";
 import { CURRENCIES, DEFAULT_CURRENCY } from "@/lib/currencies";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Ripple } from "@/components/ui/ripple";
+import GradualBlur from "@/components/GradualBlur";
 import AddExpenseForm from "@/components/expense/AddExpenseForm";
 import GlassSurface from "@/components/GlassSurface";
 import Logo from "@/components/Logo";
@@ -161,6 +162,7 @@ export default function Home() {
 
   return (
     <main className="relative z-10 min-h-screen text-text">
+      <GradualBlur target="page" position="bottom" height="5rem" strength={1.5} divCount={6} curve="bezier" zIndex={10} />
       <div className="max-w-2xl mx-auto px-4 pt-4 pb-8 flex flex-col gap-2">
 
         {/* Header */}
