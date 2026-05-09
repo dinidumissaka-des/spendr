@@ -52,6 +52,16 @@ export async function signOut() {
   if (error) throw error;
 }
 
+export async function signInWithGoogle() {
+  const { error } = await getClient().auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/`,
+    },
+  });
+  if (error) throw error;
+}
+
 export async function addExpense(data: NewExpense, userId: string): Promise<Expense> {
   const { data: inserted, error } = await getClient()
     .from('expenses')
