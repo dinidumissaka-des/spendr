@@ -260,6 +260,9 @@ export default function Home() {
             {/* Add form */}
             <AddExpenseForm userId={user.id} currency={currency} onExpenseAdded={fetchExpenses} />
 
+            {/* Budget */}
+            <BudgetBar spent={expenses.reduce((s, e) => s + Number(e.amount), 0) + subscriptionsTotal} currency={currency} />
+
             {/* Filter tabs */}
             <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
               <div className="flex gap-1 p-1 w-full">
@@ -278,9 +281,6 @@ export default function Home() {
                 ))}
               </div>
             </GlassSurface>
-
-            {/* Budget */}
-            <BudgetBar spent={expenses.reduce((s, e) => s + Number(e.amount), 0) + subscriptionsTotal} currency={currency} />
 
             {/* Expense list / loading / error */}
             <div key={filter} className="animate-fade-slide-in">
