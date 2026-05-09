@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Plus, Trash2, Pencil, Check, X, Loader2 } from "lucide-react";
 import { addSubscription, deleteSubscription, updateSubscription } from "@/lib/supabase";
 import { formatAmount } from "@/lib/currencies";
@@ -38,8 +38,25 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
   const [editState, setEditState] = useState<EditState | null>(null);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [swipedId, setSwipedId] = useState<string | null>(null);
+
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
 
   const monthlyTotal = subscriptions.reduce((s, sub) => s + Number(sub.amount), 0);
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent, subId: string) {
+    const deltaX = touchStartX.current - e.changedTouches[0].clientX;
+    const deltaY = Math.abs(touchStartY.current - e.changedTouches[0].clientY);
+    if (deltaY > 40) return;
+    if (deltaX > 50) setSwipedId(subId);
+    else if (deltaX < -20) setSwipedId(null);
+  }
 
   async function handleAdd() {
     const parsed = parseFloat(newAmount);
@@ -57,6 +74,7 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
   }
 
   function startEdit(sub: Subscription) {
+    setSwipedId(null);
     setEditingId(sub.id);
     setEditState({ name: sub.name, amount: String(sub.amount), category: sub.category });
   }
@@ -67,11 +85,7 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
     if (!editState.name.trim() || isNaN(parsed) || parsed <= 0) return;
     setSaving(true);
     try {
-      await updateSubscription(id, {
-        name: editState.name.trim(),
-        amount: parsed,
-        category: editState.category,
-      });
+      await updateSubscription(id, { name: editState.name.trim(), amount: parsed, category: editState.category });
       setEditingId(null); setEditState(null);
       onChanged();
     } finally {
@@ -80,6 +94,7 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
   }
 
   async function handleDelete(id: string) {
+    setSwipedId(null);
     setDeletingId(id);
     try {
       await deleteSubscription(id);
@@ -90,8 +105,7 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* List + monthly total */}
+    <div className="flex flex-col gap-4" onClick={() => setSwipedId(null)}>
       {subscriptions.length > 0 && (
         <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
           <div className="px-5 py-4 flex items-center justify-between w-full">
@@ -149,26 +163,58 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
                 );
               }
 
+              const isSwiped = swipedId === sub.id;
+
               return (
-                <div key={sub.id} className="group flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-sans truncate">{sub.name}</p>
-                    <span className="inline-block mt-0.5 text-xs font-mono px-1.5 py-0.5 rounded-full bg-white/[0.07] text-white/40">
-                      {sub.category}
-                    </span>
+                <div
+                  key={sub.id}
+                  className="relative overflow-hidden group"
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={(e) => handleTouchEnd(e, sub.id)}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Swipe action buttons (mobile) */}
+                  <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 px-2 sm:hidden">
+                    <button
+                      onClick={() => startEdit(sub)}
+                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 text-white"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(sub.id)}
+                      disabled={deletingId === sub.id}
+                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-danger/20 text-danger disabled:opacity-30"
+                    >
+                      {deletingId === sub.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                    </button>
                   </div>
-                  <span className="font-mono text-sm text-white flex-shrink-0">
-                    {formatAmount(Number(sub.amount), currency)}<span className="text-muted text-xs">/mo</span>
-                  </span>
-                  <div className="hidden sm:flex gap-1 overflow-hidden w-0 group-hover:w-[60px] transition-all duration-200 flex-shrink-0">
-                    <button onClick={() => startEdit(sub)} aria-label="Edit"
-                      className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-white transition-colors flex-shrink-0">
-                      <Pencil size={13} />
-                    </button>
-                    <button onClick={() => handleDelete(sub.id)} disabled={deletingId === sub.id} aria-label="Delete"
-                      className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-danger disabled:opacity-30 transition-colors flex-shrink-0">
-                      {deletingId === sub.id ? <span className="text-sm">…</span> : <Trash2 size={13} />}
-                    </button>
+
+                  {/* Row content */}
+                  <div
+                    className="flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-all duration-200"
+                    style={{ transform: isSwiped ? "translateX(-88px)" : "translateX(0)" }}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-sm font-sans truncate">{sub.name}</p>
+                      <span className="inline-block mt-0.5 text-xs font-mono px-1.5 py-0.5 rounded-full bg-white/[0.07] text-white/40">
+                        {sub.category}
+                      </span>
+                    </div>
+                    <span className="font-mono text-sm text-white flex-shrink-0">
+                      {formatAmount(Number(sub.amount), currency)}<span className="text-muted text-xs">/mo</span>
+                    </span>
+                    {/* Hover actions (desktop) */}
+                    <div className="hidden sm:flex gap-1 overflow-hidden w-0 group-hover:w-[60px] transition-all duration-200 flex-shrink-0">
+                      <button onClick={() => startEdit(sub)} aria-label="Edit"
+                        className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-white transition-colors flex-shrink-0">
+                        <Pencil size={13} />
+                      </button>
+                      <button onClick={() => handleDelete(sub.id)} disabled={deletingId === sub.id} aria-label="Delete"
+                        className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-danger disabled:opacity-30 transition-colors flex-shrink-0">
+                        {deletingId === sub.id ? <span className="text-sm">…</span> : <Trash2 size={13} />}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -176,8 +222,6 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
           </div>
         </GlassSurface>
       )}
-
-      {/* Add form */}
 
       {showAdd && (
         <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
@@ -234,7 +278,6 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
         </GlassSurface>
       )}
 
-      {/* Add button */}
       {!showAdd && (
         <button
           onClick={() => setShowAdd(true)}
@@ -245,7 +288,6 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
         </button>
       )}
 
-      {/* Empty state */}
       {subscriptions.length === 0 && !showAdd && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <span className="text-4xl mb-3">🔄</span>
