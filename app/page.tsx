@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { LogOut, ChevronDown } from "lucide-react";
+import { LogOut, ChevronDown, Download } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { getExpensesByMonth, getSubscriptions, onAuthStateChange, signOut, getUserSettings, upsertUserSettings } from "@/lib/supabase";
 import type { Expense, Subscription } from "@/types";
 import { CURRENCIES, DEFAULT_CURRENCY } from "@/lib/currencies";
+import { exportExpensesCSV, exportSubscriptionsCSV } from "@/lib/export";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Ripple } from "@/components/ui/ripple";
 import GradualBlur from "@/components/GradualBlur";
@@ -115,24 +116,38 @@ export default function Home() {
   }, []);
 
   const fetchExpenses = useCallback(async () => {
-    setLoading(true);
+    const cacheKey = `minti_expenses_${selectedMonth.year}_${selectedMonth.month}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try { setExpenses(JSON.parse(cached)); } catch { /* ignore corrupt cache */ }
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     setFetchError(null);
     try {
       const data = await getExpensesByMonth(selectedMonth.year, selectedMonth.month);
       setExpenses(data);
+      try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch { /* quota exceeded */ }
     } catch {
-      setFetchError("Could not load expenses. Check your connection.");
+      if (!cached) setFetchError("Could not load expenses. Check your connection.");
     } finally {
       setLoading(false);
     }
   }, [selectedMonth]);
 
   const fetchSubscriptions = useCallback(async () => {
+    const cacheKey = "minti_subscriptions";
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try { setSubscriptions(JSON.parse(cached)); } catch { /* ignore corrupt cache */ }
+    }
     try {
       const data = await getSubscriptions();
       setSubscriptions(data);
+      try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch { /* quota exceeded */ }
     } catch {
-      // silently fail; subscriptions are non-critical on load
+      // silently keep showing cached data if available
     }
   }, []);
 
@@ -219,7 +234,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Row 2: Currency + Month nav */}
+          {/* Row 2: Currency + Export + Month nav */}
           <div className="flex items-center gap-2 w-full justify-between">
             {/* Currency picker */}
             <div ref={currencyRef} className="relative">
@@ -231,6 +246,7 @@ export default function Home() {
                 <ChevronDown size={11} />
               </button>
             </div>
+
 
             <BottomDrawer
               open={showCurrencyPicker}
@@ -253,8 +269,20 @@ export default function Home() {
               ))}
             </BottomDrawer>
 
-            {/* Month nav */}
+            {/* Export + Month nav */}
             <div className="flex items-center gap-2">
+              <button
+                onClick={() =>
+                  view === "expenses"
+                    ? exportExpensesCSV(expenses, currency, selectedMonth)
+                    : exportSubscriptionsCSV(subscriptions, currency)
+                }
+                aria-label="Export CSV"
+                className="flex items-center gap-1.5 h-8 px-3 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors text-xs font-mono"
+              >
+                <Download size={12} />
+                CSV
+              </button>
               <button
                 onClick={prevMonth}
                 className="w-8 h-8 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
