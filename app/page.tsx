@@ -117,20 +117,19 @@ export default function Home() {
 
   const fetchExpenses = useCallback(async () => {
     const cacheKey = `minti_expenses_${selectedMonth.year}_${selectedMonth.month}`;
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      try { setExpenses(JSON.parse(cached)); } catch { /* ignore corrupt cache */ }
-      setLoading(false);
-    } else {
-      setLoading(true);
-    }
+    setLoading(true);
     setFetchError(null);
     try {
       const data = await getExpensesByMonth(selectedMonth.year, selectedMonth.month);
       setExpenses(data);
       try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch { /* quota exceeded */ }
     } catch {
-      if (!cached) setFetchError("Could not load expenses. Check your connection.");
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        try { setExpenses(JSON.parse(cached)); } catch { /* ignore corrupt cache */ }
+      } else {
+        setFetchError("Could not load expenses. Check your connection.");
+      }
     } finally {
       setLoading(false);
     }
@@ -138,16 +137,15 @@ export default function Home() {
 
   const fetchSubscriptions = useCallback(async () => {
     const cacheKey = "minti_subscriptions";
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      try { setSubscriptions(JSON.parse(cached)); } catch { /* ignore corrupt cache */ }
-    }
     try {
       const data = await getSubscriptions();
       setSubscriptions(data);
       try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch { /* quota exceeded */ }
     } catch {
-      // silently keep showing cached data if available
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        try { setSubscriptions(JSON.parse(cached)); } catch { /* ignore corrupt cache */ }
+      }
     }
   }, []);
 
