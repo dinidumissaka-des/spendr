@@ -41,6 +41,8 @@ const SWIPE_THRESHOLD = 72;
 
 export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [swipedId, setSwipedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editState, setEditState] = useState<EditState | null>(null);
   const [saving, setSaving] = useState(false);
@@ -53,6 +55,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
   const touchDx = useRef(0);
 
   function startEdit(expense: Expense) {
+    setConfirmDeleteId(null);
     setEditingId(expense.id);
     setEditState({
       description: expense.description,
@@ -109,15 +112,28 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
   function snapBack(id: string) {
     const el = rowRefs.current[id];
     if (!el) return;
-    // Spring curve for a satisfying bounce
     el.style.transition = "transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1)";
     el.style.transform = "translateX(0)";
     resetPanels(id);
+    setSwipedId(null);
+    touchActiveId.current = null;
+    touchDx.current = 0;
+  }
+
+  function snapToDelete(id: string) {
+    const el = rowRefs.current[id];
+    if (!el) return;
+    el.style.transition = "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)";
+    el.style.transform = "translateX(-88px)";
+    const dp = deletePanelRefs.current[id];
+    if (dp) dp.style.opacity = "1";
+    setSwipedId(id);
     touchActiveId.current = null;
     touchDx.current = 0;
   }
 
   function onTouchStart(e: React.TouchEvent, id: string) {
+    if (swipedId && swipedId !== id) snapBack(swipedId);
     touchStartX.current = e.touches[0].clientX;
     touchActiveId.current = id;
     touchDx.current = 0;
@@ -171,12 +187,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
       }, 200);
     } else if (dx < -SWIPE_THRESHOLD) {
       haptic(18);
-      if (el) {
-        el.style.transition = "transform 200ms ease-in";
-        el.style.transform = "translateX(-110%)";
-      }
-      resetPanels(id);
-      setTimeout(() => handleDelete(id), 200);
+      snapToDelete(id);
     } else {
       snapBack(id);
     }
@@ -280,25 +291,33 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                 }
 
                 return (
-                  <div key={expense.id} className="relative overflow-hidden">
+                  <div
+                    key={expense.id}
+                    className="relative overflow-hidden"
+                    onClick={() => { if (swipedId === expense.id) snapBack(expense.id); }}
+                  >
                     {/* Edit action — revealed on right swipe */}
                     <div
                       ref={(el) => { editPanelRefs.current[expense.id] = el; }}
                       style={{ opacity: 0 }}
-                      className="absolute inset-0 flex items-center gap-2 pl-5 bg-accent/15"
+                      className="absolute inset-0 flex items-center gap-2 pl-5 bg-accent/15 pointer-events-none"
                     >
                       <Pencil size={15} className="text-accent" />
                       <span className="text-xs font-semibold text-accent">Edit</span>
                     </div>
-                    {/* Delete action — revealed on left swipe */}
-                    <div
-                      ref={(el) => { deletePanelRefs.current[expense.id] = el; }}
+                    {/* Delete action — revealed on left swipe, tappable to confirm */}
+                    <button
+                      ref={(el) => { deletePanelRefs.current[expense.id] = el as HTMLDivElement | null; }}
                       style={{ opacity: 0 }}
-                      className="absolute inset-0 flex items-center justify-end gap-2 pr-5 bg-danger/15"
+                      onClick={(e) => { e.stopPropagation(); handleDelete(expense.id); }}
+                      disabled={deletingId === expense.id}
+                      className="absolute right-0 top-0 bottom-0 w-[88px] flex items-center justify-center gap-2 bg-danger/20 sm:hidden disabled:opacity-50"
                     >
-                      <span className="text-xs font-semibold text-danger">Delete</span>
-                      <Trash2 size={15} className="text-danger" />
-                    </div>
+                      {deletingId === expense.id
+                        ? <span className="text-xs font-semibold text-danger">…</span>
+                        : <><Trash2 size={15} className="text-danger" /><span className="text-xs font-semibold text-danger">Delete</span></>
+                      }
+                    </button>
 
                     {/* Row */}
                     <div
@@ -326,23 +345,40 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                         {formatAmount(Number(expense.amount), currency)}
                       </span>
 
-                      <div className="hidden sm:flex gap-1 overflow-hidden w-0 group-hover:w-[60px] transition-all duration-200 flex-shrink-0">
-                        <button
-                          onClick={() => startEdit(expense)}
-                          aria-label="Edit expense"
-                          className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-white transition-colors flex-shrink-0"
-                        >
-                          <Pencil size={13} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(expense.id)}
-                          disabled={deletingId === expense.id}
-                          aria-label="Delete expense"
-                          className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-danger disabled:opacity-30 transition-colors flex-shrink-0"
-                        >
-                          {deletingId === expense.id ? <span className="text-sm">…</span> : <Trash2 size={13} />}
-                        </button>
-                      </div>
+                      {confirmDeleteId === expense.id ? (
+                        <div className="hidden sm:flex items-center gap-1 flex-shrink-0">
+                          <button
+                            onClick={() => { setConfirmDeleteId(null); handleDelete(expense.id); }}
+                            className="h-7 px-2 rounded-md bg-danger/20 text-danger text-xs font-semibold flex-shrink-0"
+                          >
+                            Delete
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-white flex-shrink-0"
+                          >
+                            <X size={13} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="hidden sm:flex gap-1 overflow-hidden w-0 group-hover:w-[60px] transition-all duration-200 flex-shrink-0">
+                          <button
+                            onClick={() => startEdit(expense)}
+                            aria-label="Edit expense"
+                            className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-white transition-colors flex-shrink-0"
+                          >
+                            <Pencil size={13} />
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(expense.id)}
+                            disabled={deletingId === expense.id}
+                            aria-label="Delete expense"
+                            className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-danger disabled:opacity-30 transition-colors flex-shrink-0"
+                          >
+                            {deletingId === expense.id ? <span className="text-sm">…</span> : <Trash2 size={13} />}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
