@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { Pencil, Check, X } from "lucide-react";
 import { formatAmount } from "@/lib/currencies";
 import GlassSurface from "@/components/GlassSurface";
@@ -10,7 +10,7 @@ interface Props {
   currency: string;
 }
 
-export default function BudgetBar({ spent, currency }: Props) {
+const BudgetBar = memo(function BudgetBar({ spent, currency }: Props) {
   const [budget, setBudget] = useState<number | null>(null);
   const [editing, setEditing] = useState(false);
   const [input, setInput] = useState("");
@@ -118,4 +118,6 @@ export default function BudgetBar({ spent, currency }: Props) {
     </div>
     </GlassSurface>
   );
-}
+});
+
+export default BudgetBar;

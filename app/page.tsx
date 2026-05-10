@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { LogOut, ChevronDown } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { getExpensesByMonth, getSubscriptions, onAuthStateChange, signOut } from "@/lib/supabase";
@@ -62,11 +62,11 @@ export default function Home() {
     if (saved) setCurrency(saved);
   }, []);
 
-  function selectCurrency(code: string) {
+  const selectCurrency = useCallback((code: string) => {
     setCurrency(code);
     localStorage.setItem("minti_currency", code);
     setShowCurrencyPicker(false);
-  }
+  }, []);
 
   // Close picker on outside click
   useEffect(() => {
@@ -128,13 +128,21 @@ export default function Home() {
     });
   }
 
-  const filteredExpenses = expenses.filter((e) => {
-    if (filter === "today") return e.date === todayISO();
-    if (filter === "week") return e.date >= startOfWeekISO();
-    return true;
-  });
+  const subscriptionsTotal = useMemo(
+    () => subscriptions.reduce((s, sub) => s + Number(sub.amount), 0),
+    [subscriptions]
+  );
 
-  const subscriptionsTotal = subscriptions.reduce((s, sub) => s + Number(sub.amount), 0);
+  const expensesTotal = useMemo(
+    () => expenses.reduce((s, e) => s + Number(e.amount), 0),
+    [expenses]
+  );
+
+  const filteredExpenses = useMemo(() => {
+    if (filter === "today") return expenses.filter((e) => e.date === todayISO());
+    if (filter === "week") return expenses.filter((e) => e.date >= startOfWeekISO());
+    return expenses;
+  }, [expenses, filter]);
 
   const filters: { key: Filter; label: string }[] = [
     { key: "all",   label: "All"       },
@@ -163,7 +171,7 @@ export default function Home() {
   return (
     <main className="relative z-10 min-h-screen text-text">
       <GradualBlur target="page" position="bottom" height="5rem" strength={1.5} divCount={6} curve="bezier" zIndex={10} className="hidden sm:block" />
-      <div className="max-w-2xl mx-auto px-4 pt-4 pb-8 flex flex-col gap-2">
+      <div className="max-w-2xl mx-auto px-4 pt-4 pb-8 sm:pb-24 flex flex-col gap-2">
 
         {/* Header */}
         <div className="flex flex-col gap-5">
@@ -261,7 +269,7 @@ export default function Home() {
             <AddExpenseForm userId={user.id} currency={currency} onExpenseAdded={fetchExpenses} />
 
             {/* Budget */}
-            <BudgetBar spent={expenses.reduce((s, e) => s + Number(e.amount), 0) + subscriptionsTotal} currency={currency} />
+            <BudgetBar spent={expensesTotal + subscriptionsTotal} currency={currency} />
 
             {/* Filter tabs */}
             <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
@@ -305,7 +313,7 @@ export default function Home() {
           </>
         ) : (
           <>
-            <BudgetBar spent={expenses.reduce((s, e) => s + Number(e.amount), 0) + subscriptionsTotal} currency={currency} />
+            <BudgetBar spent={expensesTotal + subscriptionsTotal} currency={currency} />
             <SubscriptionList
               subscriptions={subscriptions}
               userId={user.id}

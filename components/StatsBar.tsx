@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import type { Expense } from "@/types";
 import { formatAmount } from "@/lib/currencies";
 import GlassSurface from "@/components/GlassSurface";
@@ -26,7 +27,7 @@ interface Stat {
   hero: boolean;
 }
 
-export default function StatsBar({ expenses, selectedMonth, currency, subscriptionsTotal = 0 }: Props) {
+const StatsBar = memo(function StatsBar({ expenses, selectedMonth, currency, subscriptionsTotal = 0 }: Props) {
   const today = todayISO();
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
@@ -83,4 +84,6 @@ export default function StatsBar({ expenses, selectedMonth, currency, subscripti
       </div>
     </div>
   );
-}
+});
+
+export default StatsBar;
