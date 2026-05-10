@@ -111,3 +111,22 @@ export async function updateSubscription(id: string, data: Partial<NewSubscripti
   const { error } = await getClient().from('subscriptions').update(data).eq('id', id);
   if (error) throw error;
 }
+
+export async function getUserSettings(): Promise<{ budget: number | null; currency: string } | null> {
+  const { data } = await getClient()
+    .from('user_settings')
+    .select('budget, currency')
+    .maybeSingle();
+  return data ?? null;
+}
+
+export async function upsertUserSettings(settings: { budget?: number | null; currency?: string }): Promise<void> {
+  const { data: { user } } = await getClient().auth.getUser();
+  if (!user) return;
+  await getClient()
+    .from('user_settings')
+    .upsert(
+      { user_id: user.id, ...settings, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id' }
+    );
+}

@@ -176,7 +176,7 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Swipe action buttons (mobile) */}
-                  <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 px-2 sm:hidden">
+                  <div className={`absolute right-0 top-0 bottom-0 flex items-center gap-1 px-2 sm:hidden transition-opacity duration-200 ${isSwiped ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
                     <button
                       onClick={() => startEdit(sub)}
                       className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 text-white"

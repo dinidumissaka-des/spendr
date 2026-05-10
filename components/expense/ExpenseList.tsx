@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Trash2, Pencil, Check, X } from "lucide-react";
+import { Trash2, Pencil, Check, X, Loader2 } from "lucide-react";
 import { deleteExpense, updateExpense } from "@/lib/supabase";
 import { formatAmount } from "@/lib/currencies";
 import { CATEGORY_COLORS } from "@/lib/categories";
@@ -9,10 +9,6 @@ import GlassSurface from "@/components/GlassSurface";
 import type { Expense } from "@/types";
 
 const PRESET_CATEGORIES = Object.keys(CATEGORY_COLORS);
-
-function categoryColor(cat: string) {
-  return CATEGORY_COLORS[cat] ?? "#717a68";
-}
 
 function formatDateLabel(dateStr: string) {
   const today = new Date().toISOString().split("T")[0];
@@ -37,7 +33,7 @@ interface EditState {
   date: string;
 }
 
-const SWIPE_THRESHOLD = 72;
+const SWIPE_THRESHOLD = 60;
 
 export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -48,14 +44,14 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
   const [saving, setSaving] = useState(false);
 
   const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const editPanelRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const deletePanelRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
   const touchActiveId = useRef<string | null>(null);
   const touchDx = useRef(0);
 
   function startEdit(expense: Expense) {
     setConfirmDeleteId(null);
+    setSwipedId(null);
     setEditingId(expense.id);
     setEditState({
       description: expense.description,
@@ -102,31 +98,22 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
     }
   }
 
-  function resetPanels(id: string) {
-    const ep = editPanelRefs.current[id];
-    const dp = deletePanelRefs.current[id];
-    if (ep) ep.style.opacity = "0";
-    if (dp) dp.style.opacity = "0";
-  }
-
   function snapBack(id: string) {
     const el = rowRefs.current[id];
     if (!el) return;
     el.style.transition = "transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1)";
     el.style.transform = "translateX(0)";
-    resetPanels(id);
     setSwipedId(null);
+    setConfirmDeleteId(null);
     touchActiveId.current = null;
     touchDx.current = 0;
   }
 
-  function snapToDelete(id: string) {
+  function snapToReveal(id: string) {
     const el = rowRefs.current[id];
     if (!el) return;
     el.style.transition = "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)";
     el.style.transform = "translateX(-88px)";
-    const dp = deletePanelRefs.current[id];
-    if (dp) dp.style.opacity = "1";
     setSwipedId(id);
     touchActiveId.current = null;
     touchDx.current = 0;
@@ -135,59 +122,32 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
   function onTouchStart(e: React.TouchEvent, id: string) {
     if (swipedId && swipedId !== id) snapBack(swipedId);
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
     touchActiveId.current = id;
     touchDx.current = 0;
     const el = rowRefs.current[id];
     if (el) el.style.transition = "none";
   }
 
-  function haptic(ms: number) {
-    if ("vibrate" in navigator) navigator.vibrate(ms);
-  }
-
   function onTouchMove(e: React.TouchEvent, id: string) {
     if (touchActiveId.current !== id) return;
     const dx = e.touches[0].clientX - touchStartX.current;
-    const clamped = Math.max(-110, Math.min(110, dx));
-    // Buzz once when crossing the threshold
+    const dy = Math.abs(e.touches[0].clientY - touchStartY.current);
+    if (dy > 10 && Math.abs(dx) < dy) return; // vertical scroll, ignore
+    const clamped = Math.max(-110, Math.min(0, dx));
     if (Math.abs(touchDx.current) < SWIPE_THRESHOLD && Math.abs(clamped) >= SWIPE_THRESHOLD) {
-      haptic(8);
+      if ("vibrate" in navigator) navigator.vibrate(8);
     }
     touchDx.current = clamped;
     const el = rowRefs.current[id];
     if (el) el.style.transform = `translateX(${clamped}px)`;
-
-    // Fade in the relevant action panel as swipe progresses
-    const progress = Math.min(Math.abs(clamped) / SWIPE_THRESHOLD, 1);
-    const ep = editPanelRefs.current[id];
-    const dp = deletePanelRefs.current[id];
-    if (clamped > 0) {
-      if (ep) ep.style.opacity = String(progress);
-      if (dp) dp.style.opacity = "0";
-    } else {
-      if (dp) dp.style.opacity = String(progress);
-      if (ep) ep.style.opacity = "0";
-    }
   }
 
-  function onTouchEnd(id: string, expense: Expense) {
+  function onTouchEnd(id: string) {
     const dx = touchDx.current;
-    const el = rowRefs.current[id];
-
-    if (dx > SWIPE_THRESHOLD) {
-      haptic(18);
-      if (el) {
-        el.style.transition = "transform 200ms ease-in";
-        el.style.transform = "translateX(110%)";
-      }
-      setTimeout(() => {
-        if (el) { el.style.transition = "none"; el.style.transform = "translateX(0)"; }
-        resetPanels(id);
-        startEdit(expense);
-      }, 200);
-    } else if (dx < -SWIPE_THRESHOLD) {
-      haptic(18);
-      snapToDelete(id);
+    if (dx < -SWIPE_THRESHOLD) {
+      if ("vibrate" in navigator) navigator.vibrate(18);
+      snapToReveal(id);
     } else {
       snapBack(id);
     }
@@ -234,13 +194,14 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
             <div className="w-full divide-y divide-white/10">
               {dayExpenses.map((expense) => {
                 const isEditing = editingId === expense.id;
+                const isSwiped = swipedId === expense.id;
 
                 if (isEditing && editState) {
                   return (
-                    <div key={expense.id} className="px-4 py-3 flex flex-col gap-3 bg-surface2">
+                    <div key={expense.id} className="px-4 py-3 flex flex-col gap-3 bg-white/[0.03]">
                       <div className="flex gap-2">
                         <input
-                          className="flex-1 bg-surface border border-border rounded-lg px-3 h-9 text-base text-white placeholder:text-muted outline-none focus:border-accent"
+                          className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-9 text-base text-white placeholder:text-muted outline-none focus:border-white/30"
                           value={editState.description}
                           onChange={(e) => setEditState({ ...editState, description: e.target.value })}
                           placeholder="Description"
@@ -248,7 +209,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                         />
                         <input
                           type="number"
-                          className="w-28 bg-surface border border-border rounded-lg px-3 h-9 text-base text-white outline-none focus:border-accent"
+                          className="w-28 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-9 text-base text-white outline-none focus:border-white/30 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                           value={editState.amount}
                           onChange={(e) => setEditState({ ...editState, amount: e.target.value })}
                           placeholder="Amount"
@@ -256,19 +217,19 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                           step="0.01"
                         />
                       </div>
+                      <select
+                        className="w-full bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-9 text-sm text-white outline-none focus:border-white/30 appearance-none cursor-pointer"
+                        value={editState.category}
+                        onChange={(e) => setEditState({ ...editState, category: e.target.value })}
+                      >
+                        {PRESET_CATEGORIES.map((c) => (
+                          <option key={c} value={c} className="bg-[#0a120a]">{c}</option>
+                        ))}
+                      </select>
                       <div className="flex gap-2">
-                        <select
-                          className="flex-1 bg-surface border border-border rounded-lg px-3 h-9 text-base text-white outline-none focus:border-accent appearance-none cursor-pointer"
-                          value={editState.category}
-                          onChange={(e) => setEditState({ ...editState, category: e.target.value })}
-                        >
-                          {PRESET_CATEGORIES.map((c) => (
-                            <option key={c} value={c} className="bg-surface2">{c}</option>
-                          ))}
-                        </select>
                         <input
                           type="date"
-                          className="w-36 bg-surface border border-border rounded-lg px-3 h-9 text-sm text-white outline-none focus:border-accent [color-scheme:dark]"
+                          className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-9 text-sm text-white outline-none focus:border-white/30 [color-scheme:dark]"
                           value={editState.date}
                           onChange={(e) => setEditState({ ...editState, date: e.target.value })}
                         />
@@ -281,7 +242,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                         </button>
                         <button
                           onClick={cancelEdit}
-                          className="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-muted hover:text-white flex-shrink-0"
+                          className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0"
                         >
                           <X size={15} />
                         </button>
@@ -293,38 +254,49 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                 return (
                   <div
                     key={expense.id}
-                    className="relative overflow-hidden"
-                    onClick={() => { if (swipedId === expense.id) snapBack(expense.id); }}
+                    className="relative overflow-hidden group"
+                    onClick={() => { if (isSwiped) snapBack(expense.id); }}
                   >
-                    {/* Edit action — revealed on right swipe */}
-                    <div
-                      ref={(el) => { editPanelRefs.current[expense.id] = el; }}
-                      style={{ opacity: 0 }}
-                      className="absolute inset-0 flex items-center gap-2 pl-5 bg-accent/15 pointer-events-none"
-                    >
-                      <Pencil size={15} className="text-accent" />
-                      <span className="text-xs font-semibold text-accent">Edit</span>
+                    {/* Swipe action buttons — hidden until swiped */}
+                    <div className={`absolute right-0 top-0 bottom-0 flex items-center gap-1 px-2 sm:hidden transition-opacity duration-200 ${isSwiped ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); startEdit(expense); }}
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 text-white"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      {confirmDeleteId === expense.id ? (
+                        <>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); handleDelete(expense.id); }}
+                            className="h-10 px-3 flex items-center justify-center rounded-xl bg-danger/30 text-danger text-xs font-semibold"
+                          >
+                            Delete
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); setSwipedId(null); }}
+                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 text-muted"
+                          >
+                            <X size={14} />
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(expense.id); }}
+                          disabled={deletingId === expense.id}
+                          className="w-10 h-10 flex items-center justify-center rounded-xl bg-danger/20 text-danger disabled:opacity-30"
+                        >
+                          {deletingId === expense.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                        </button>
+                      )}
                     </div>
-                    {/* Delete action — revealed on left swipe, tappable to confirm */}
-                    <button
-                      ref={(el) => { deletePanelRefs.current[expense.id] = el as HTMLDivElement | null; }}
-                      style={{ opacity: 0 }}
-                      onClick={(e) => { e.stopPropagation(); handleDelete(expense.id); }}
-                      disabled={deletingId === expense.id}
-                      className="absolute right-0 top-0 bottom-0 w-[88px] flex items-center justify-center gap-2 bg-danger/20 sm:hidden disabled:opacity-50"
-                    >
-                      {deletingId === expense.id
-                        ? <span className="text-xs font-semibold text-danger">…</span>
-                        : <><Trash2 size={15} className="text-danger" /><span className="text-xs font-semibold text-danger">Delete</span></>
-                      }
-                    </button>
 
                     {/* Row */}
                     <div
                       ref={(el) => { rowRefs.current[expense.id] = el; }}
                       onTouchStart={(e) => onTouchStart(e, expense.id)}
                       onTouchMove={(e) => onTouchMove(e, expense.id)}
-                      onTouchEnd={() => onTouchEnd(expense.id, expense)}
+                      onTouchEnd={() => onTouchEnd(expense.id)}
                       onTouchCancel={() => snapBack(expense.id)}
                       className="group relative flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors"
                     >
@@ -345,6 +317,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                         {formatAmount(Number(expense.amount), currency)}
                       </span>
 
+                      {/* Desktop hover actions */}
                       {confirmDeleteId === expense.id ? (
                         <div className="hidden sm:flex items-center gap-1 flex-shrink-0">
                           <button

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { LogOut, ChevronDown } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
-import { getExpensesByMonth, getSubscriptions, onAuthStateChange, signOut } from "@/lib/supabase";
+import { getExpensesByMonth, getSubscriptions, onAuthStateChange, signOut, getUserSettings, upsertUserSettings } from "@/lib/supabase";
 import type { Expense, Subscription } from "@/types";
 import { CURRENCIES, DEFAULT_CURRENCY } from "@/lib/currencies";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -52,20 +52,50 @@ export default function Home() {
   const [filter, setFilter] = useState<Filter>("all");
   const [view, setView] = useState<View>("expenses");
   const [currency, setCurrency] = useState<string>(DEFAULT_CURRENCY);
+  const [budget, setBudget] = useState<number | null>(null);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const currencyRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  // Persist currency to localStorage
+  // Fast init from localStorage (avoids flash on load)
   useEffect(() => {
-    const saved = localStorage.getItem("minti_currency");
-    if (saved) setCurrency(saved);
+    const c = localStorage.getItem("minti_currency");
+    if (c) setCurrency(c);
+    const b = localStorage.getItem("minti_budget");
+    if (b) setBudget(parseFloat(b));
   }, []);
+
+  // Sync settings from DB once user is known, migrate localStorage if first time
+  useEffect(() => {
+    if (!user) return;
+    getUserSettings().then((settings) => {
+      if (settings) {
+        setCurrency(settings.currency);
+        localStorage.setItem("minti_currency", settings.currency);
+        setBudget(settings.budget ?? null);
+        if (settings.budget != null) localStorage.setItem("minti_budget", String(settings.budget));
+      } else {
+        const c = localStorage.getItem("minti_currency");
+        const b = localStorage.getItem("minti_budget");
+        const toSave: { currency?: string; budget?: number } = {};
+        if (c) toSave.currency = c;
+        if (b) toSave.budget = parseFloat(b);
+        if (Object.keys(toSave).length > 0) upsertUserSettings(toSave).catch(() => {});
+      }
+    }).catch(() => {});
+  }, [user]);
 
   const selectCurrency = useCallback((code: string) => {
     setCurrency(code);
     localStorage.setItem("minti_currency", code);
     setShowCurrencyPicker(false);
+    upsertUserSettings({ currency: code }).catch(() => {});
+  }, []);
+
+  const saveBudget = useCallback((value: number) => {
+    setBudget(value);
+    localStorage.setItem("minti_budget", String(value));
+    upsertUserSettings({ budget: value }).catch(() => {});
   }, []);
 
   // Close picker on outside click
@@ -269,7 +299,7 @@ export default function Home() {
             <AddExpenseForm userId={user.id} currency={currency} onExpenseAdded={fetchExpenses} />
 
             {/* Budget */}
-            <BudgetBar spent={expensesTotal + subscriptionsTotal} currency={currency} />
+            <BudgetBar spent={expensesTotal + subscriptionsTotal} currency={currency} budget={budget} onBudgetSave={saveBudget} />
 
             {/* Filter tabs */}
             <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
@@ -313,7 +343,7 @@ export default function Home() {
           </>
         ) : (
           <>
-            <BudgetBar spent={expensesTotal + subscriptionsTotal} currency={currency} />
+            <BudgetBar spent={expensesTotal + subscriptionsTotal} currency={currency} budget={budget} onBudgetSave={saveBudget} />
             <SubscriptionList
               subscriptions={subscriptions}
               userId={user.id}

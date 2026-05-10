@@ -8,18 +8,14 @@ import GlassSurface from "@/components/GlassSurface";
 interface Props {
   spent: number;
   currency: string;
+  budget: number | null;
+  onBudgetSave: (value: number) => void;
 }
 
-const BudgetBar = memo(function BudgetBar({ spent, currency }: Props) {
-  const [budget, setBudget] = useState<number | null>(null);
+const BudgetBar = memo(function BudgetBar({ spent, currency, budget, onBudgetSave }: Props) {
   const [editing, setEditing] = useState(false);
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("minti_budget");
-    if (saved) setBudget(parseFloat(saved));
-  }, []);
 
   useEffect(() => {
     if (editing) setTimeout(() => inputRef.current?.focus(), 50);
@@ -33,8 +29,7 @@ const BudgetBar = memo(function BudgetBar({ spent, currency }: Props) {
   function save() {
     const parsed = parseFloat(input);
     if (!isNaN(parsed) && parsed > 0) {
-      setBudget(parsed);
-      localStorage.setItem("minti_budget", String(parsed));
+      onBudgetSave(parsed);
     }
     setEditing(false);
   }
@@ -73,7 +68,7 @@ const BudgetBar = memo(function BudgetBar({ spent, currency }: Props) {
         <button onClick={save} className="w-7 h-7 flex items-center justify-center rounded-lg bg-accent text-[#163300] flex-shrink-0">
           <Check size={13} />
         </button>
-        <button onClick={cancel} className="w-7 h-7 flex items-center justify-center rounded-lg border border-border text-muted hover:text-white flex-shrink-0">
+        <button onClick={cancel} className="w-7 h-7 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0">
           <X size={13} />
         </button>
       </div>
@@ -95,7 +90,6 @@ const BudgetBar = memo(function BudgetBar({ spent, currency }: Props) {
         </button>
       </div>
 
-      {/* Progress bar */}
       <div className="h-1.5 w-full bg-white/[0.08] rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${over ? "bg-danger" : "bg-accent"}`}
@@ -103,7 +97,6 @@ const BudgetBar = memo(function BudgetBar({ spent, currency }: Props) {
         />
       </div>
 
-      {/* Amounts */}
       <div className="flex items-center justify-between">
         <span className={`font-mono text-sm font-semibold ${over ? "text-danger" : "text-white"}`}>
           {formatAmount(spent, currency)}
