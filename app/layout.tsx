@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope } from "next/font/google";
+import { Manrope, Fraunces } from "next/font/google";
 import dynamic from "next/dynamic";
 import "./globals.css";
 import InstallPrompt from "@/components/InstallPrompt";
@@ -11,6 +11,12 @@ const GrainOverlay = dynamic(() => import("@/components/background/GrainOverlay"
 const manrope = Manrope({
   subsets: ["latin"],
   variable: "--font-manrope",
+  display: "swap",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
   display: "swap",
 });
 
@@ -39,7 +45,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={manrope.variable}>
+    <html lang="en" className={`${manrope.variable} ${fraunces.variable}`}>
       <body>
         <div className="fixed z-0 bg-[#060e03]" style={{ inset: 0, top: 'calc(-1 * env(safe-area-inset-top))' }}>
           <LightRays

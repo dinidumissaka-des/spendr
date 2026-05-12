@@ -32,9 +32,10 @@ const config: Config = {
         "primary-foreground": "rgb(var(--accent-on) / <alpha-value>)",
       },
       fontFamily: {
-        serif: ["var(--font-manrope)", "sans-serif"],
-        sans:  ["var(--font-manrope)", "sans-serif"],
-        mono:  ["var(--font-manrope)", "sans-serif"],
+        serif:     ["var(--font-manrope)", "sans-serif"],
+        sans:      ["var(--font-manrope)", "sans-serif"],
+        mono:      ["var(--font-manrope)", "sans-serif"],
+        fraunces:  ["var(--font-fraunces)", "Fraunces", "serif"],
       },
       borderRadius: {
         none:    "0",

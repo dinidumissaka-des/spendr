@@ -37,7 +37,6 @@ const SWIPE_THRESHOLD = 60;
 
 export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [swipedId, setSwipedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editState, setEditState] = useState<EditState | null>(null);
@@ -50,7 +49,6 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
   const touchDx = useRef(0);
 
   function startEdit(expense: Expense) {
-    setConfirmDeleteId(null);
     setSwipedId(null);
     setEditingId(expense.id);
     setEditState({
@@ -105,7 +103,6 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
     el.style.transition = "transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1)";
     el.style.transform = "translateX(0)";
     setSwipedId(null);
-    setConfirmDeleteId(null);
     touchActiveId.current = null;
     touchDx.current = 0;
   }
@@ -266,30 +263,13 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                       >
                         <Pencil size={14} />
                       </button>
-                      {confirmDeleteId === expense.id ? (
-                        <>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); handleDelete(expense.id); }}
-                            className="h-10 px-3 flex items-center justify-center rounded-xl bg-danger/30 text-danger text-xs font-semibold"
-                          >
-                            Delete
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); setSwipedId(null); }}
-                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 text-muted"
-                          >
-                            <X size={14} />
-                          </button>
-                        </>
-                      ) : (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(expense.id); }}
-                          disabled={deletingId === expense.id}
-                          className="w-10 h-10 flex items-center justify-center rounded-xl bg-danger/20 text-danger disabled:opacity-30"
-                        >
-                          {deletingId === expense.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                        </button>
-                      )}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDelete(expense.id); }}
+                        disabled={deletingId === expense.id}
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-danger/20 text-danger disabled:opacity-30"
+                      >
+                        {deletingId === expense.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                      </button>
                     </div>
 
                     {/* Row */}
@@ -319,40 +299,23 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                       </span>
 
                       {/* Desktop hover actions */}
-                      {confirmDeleteId === expense.id ? (
-                        <div className="hidden sm:flex items-center gap-1 flex-shrink-0">
-                          <button
-                            onClick={() => { setConfirmDeleteId(null); handleDelete(expense.id); }}
-                            className="h-7 px-2 rounded-md bg-danger/20 text-danger text-xs font-semibold flex-shrink-0"
-                          >
-                            Delete
-                          </button>
-                          <button
-                            onClick={() => setConfirmDeleteId(null)}
-                            className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-white flex-shrink-0"
-                          >
-                            <X size={13} />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="hidden sm:flex gap-1 overflow-hidden w-0 group-hover:w-[60px] transition-all duration-200 flex-shrink-0">
-                          <button
-                            onClick={() => startEdit(expense)}
-                            aria-label="Edit expense"
-                            className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-white transition-colors flex-shrink-0"
-                          >
-                            <Pencil size={13} />
-                          </button>
-                          <button
-                            onClick={() => setConfirmDeleteId(expense.id)}
-                            disabled={deletingId === expense.id}
-                            aria-label="Delete expense"
-                            className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-danger disabled:opacity-30 transition-colors flex-shrink-0"
-                          >
-                            {deletingId === expense.id ? <span className="text-sm">…</span> : <Trash2 size={13} />}
-                          </button>
-                        </div>
-                      )}
+                      <div className="hidden sm:flex gap-1 overflow-hidden w-0 group-hover:w-[60px] transition-all duration-200 flex-shrink-0">
+                        <button
+                          onClick={() => startEdit(expense)}
+                          aria-label="Edit expense"
+                          className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-white transition-colors flex-shrink-0"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(expense.id)}
+                          disabled={deletingId === expense.id}
+                          aria-label="Delete expense"
+                          className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-danger disabled:opacity-30 transition-colors flex-shrink-0"
+                        >
+                          {deletingId === expense.id ? <span className="text-sm">…</span> : <Trash2 size={13} />}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );

@@ -374,7 +374,7 @@ export default function Home() {
               }`}
             >
               <Icon size={18} strokeWidth={1.8} />
-              <span>{label}</span>
+              <span className="font-fraunces">{label}</span>
             </button>
           ))}
         </div>
