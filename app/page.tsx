@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { LogOut, ChevronDown, Download, MoreHorizontal, Receipt, RefreshCw } from "lucide-react";
+import { LogOut, ChevronDown, Download, MoreHorizontal, CreditCard, RefreshCw } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { getExpensesByMonth, getSubscriptions, onAuthStateChange, signOut, getUserSettings, upsertUserSettings } from "@/lib/supabase";
 import type { Expense, Subscription } from "@/types";
@@ -361,7 +361,7 @@ export default function Home() {
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 px-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="flex items-center h-16 p-1.5 rounded-2xl border border-white/[0.1] bg-black/40 backdrop-blur-xl">
           {([
-            { key: "expenses", label: "Expenses", icon: Receipt },
+            { key: "expenses", label: "Expenses", icon: CreditCard },
             { key: "subscriptions", label: "Subscriptions", icon: RefreshCw },
           ] as { key: View; label: string; icon: React.ElementType }[]).map(({ key, label, icon: Icon }) => (
             <button
@@ -374,7 +374,7 @@ export default function Home() {
               }`}
             >
               <Icon size={18} strokeWidth={1.8} />
-              <span className="font-fraunces">{label}</span>
+              <span>{label}</span>
             </button>
           ))}
         </div>
