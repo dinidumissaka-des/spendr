@@ -357,8 +357,8 @@ export default function Home() {
       </BottomDrawer>
 
       {/* Bottom nav — mobile only */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 px-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="flex items-center h-16 p-1.5 rounded-2xl border border-white/[0.1] bg-black/60 backdrop-blur-xl mb-2">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.35rem)' }}>
+        <div className="flex items-center h-16 p-1.5 rounded-2xl border border-white/[0.1] bg-black/40 backdrop-blur-xl">
           {([
             { key: "expenses", label: "Expenses", icon: Receipt },
             { key: "subscriptions", label: "Subscriptions", icon: RefreshCw },
@@ -368,7 +368,7 @@ export default function Home() {
               onClick={() => setView(key)}
               className={`flex-1 h-full flex flex-col items-center justify-center gap-1 rounded-xl text-xs font-mono transition-colors ${
                 view === key
-                  ? "bg-white/10 text-white border border-white/10"
+                  ? "bg-white/15 text-white border border-white/15"
                   : "text-white/35 hover:text-white/70"
               }`}
             >
