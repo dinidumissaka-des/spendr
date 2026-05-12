@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { LogOut, ChevronDown, Download } from "lucide-react";
+import { LogOut, ChevronDown, Download, MoreHorizontal } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { getExpensesByMonth, getSubscriptions, onAuthStateChange, signOut, getUserSettings, upsertUserSettings } from "@/lib/supabase";
 import type { Expense, Subscription } from "@/types";
@@ -55,8 +55,19 @@ export default function Home() {
   const [currency, setCurrency] = useState<string>(DEFAULT_CURRENCY);
   const [budget, setBudget] = useState<number | null>(null);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
+  const [showMoreDrawer, setShowMoreDrawer] = useState(false);
+  const [expandedSection, setExpandedSection] = useState<"month" | "currency" | null>(null);
+  const [pickerYear, setPickerYear] = useState(now.getFullYear());
   const currencyRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    if (!showMoreDrawer) setExpandedSection(null);
+  }, [showMoreDrawer]);
+
+  useEffect(() => {
+    if (expandedSection === "month") setPickerYear(selectedMonth.year);
+  }, [expandedSection]);
 
   // Fast init from localStorage (avoids flash on load)
   useEffect(() => {
@@ -214,7 +225,150 @@ export default function Home() {
   return (
     <main className="relative z-10 min-h-screen text-text">
       <GradualBlur target="page" position="bottom" height="5rem" strength={1.5} divCount={6} curve="bezier" zIndex={10} className="hidden sm:block" />
-      <div className="max-w-2xl mx-auto px-4 pb-8 sm:pb-24 flex flex-col gap-2" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
+      <GradualBlur target="page" position="bottom" height="5rem" strength={1.5} divCount={6} curve="bezier" zIndex={10} className="sm:hidden" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 4.25rem)' }} />
+      {/* Currency picker drawer — desktop */}
+      <BottomDrawer
+        open={showCurrencyPicker}
+        onClose={() => setShowCurrencyPicker(false)}
+        title="Select Currency"
+      >
+        {CURRENCIES.map((c) => (
+          <button
+            key={c.code}
+            onClick={() => selectCurrency(c.code)}
+            className={`w-full flex items-center justify-between px-4 py-3.5 text-sm transition-colors border-b border-white/10 last:border-0 ${
+              currency === c.code
+                ? "text-accent bg-accent/10"
+                : "text-white hover:bg-white/[0.07]"
+            }`}
+          >
+            <span className="font-mono font-semibold text-base">{c.code}</span>
+            <span className="text-sm text-muted">{c.name}</span>
+          </button>
+        ))}
+      </BottomDrawer>
+
+      {/* Menu drawer — mobile only */}
+      <BottomDrawer
+        open={showMoreDrawer}
+        onClose={() => setShowMoreDrawer(false)}
+        title="Menu"
+      >
+        {/* Month row + inline calendar */}
+        <button
+          onClick={() => setExpandedSection(s => s === "month" ? null : "month")}
+          className="w-full flex items-center justify-between px-4 py-3.5 text-sm text-white hover:bg-white/[0.07] transition-colors"
+        >
+          <span className="text-white/60">Month</span>
+          <div className="flex items-center gap-2">
+            <span className="font-mono font-semibold">{MONTH_NAMES[selectedMonth.month - 1]} {selectedMonth.year}</span>
+            <ChevronDown size={13} className={`text-white/40 transition-transform duration-200 ${expandedSection === "month" ? "rotate-180" : ""}`} />
+          </div>
+        </button>
+        <div className={`overflow-hidden transition-all duration-300 ease-out ${expandedSection === "month" ? "max-h-64" : "max-h-0"}`}>
+          <div className="px-4 pt-3 pb-4">
+            <div className="flex items-center justify-between mb-3">
+              <button
+                onClick={() => setPickerYear(y => y - 1)}
+                className="w-8 h-8 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] text-white/40 hover:text-white/90 transition-colors"
+              >‹</button>
+              <span className="font-mono text-sm font-semibold text-white">{pickerYear}</span>
+              <button
+                onClick={() => setPickerYear(y => y + 1)}
+                className="w-8 h-8 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] text-white/40 hover:text-white/90 transition-colors"
+              >›</button>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {MONTH_NAMES.map((name, i) => {
+                const month = i + 1;
+                const isSelected = pickerYear === selectedMonth.year && month === selectedMonth.month;
+                return (
+                  <button
+                    key={month}
+                    onClick={() => { setSelectedMonth({ year: pickerYear, month }); setExpandedSection(null); setShowMoreDrawer(false); }}
+                    className={`h-10 rounded-full text-sm font-mono transition-colors ${
+                      isSelected
+                        ? "bg-accent/15 text-accent border border-accent/30 font-semibold"
+                        : "text-white/40 hover:text-white/80"
+                    }`}
+                  >{name}</button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Currency row + inline list */}
+        <button
+          onClick={() => setExpandedSection(s => s === "currency" ? null : "currency")}
+          className="w-full flex items-center justify-between px-4 py-3.5 text-sm text-white hover:bg-white/[0.07] transition-colors"
+        >
+          <span className="text-white/60">Currency</span>
+          <div className="flex items-center gap-2">
+            <span className="font-mono font-semibold">{currency}</span>
+            <ChevronDown size={13} className={`text-white/40 transition-transform duration-200 ${expandedSection === "currency" ? "rotate-180" : ""}`} />
+          </div>
+        </button>
+        <div className={`overflow-hidden transition-all duration-300 ease-out ${expandedSection === "currency" ? "max-h-64" : "max-h-0"}`}>
+          <div className="overflow-y-auto max-h-64">
+            {CURRENCIES.map((c) => (
+              <button
+                key={c.code}
+                onClick={() => { selectCurrency(c.code); setExpandedSection(null); }}
+                className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-colors ${
+                  currency === c.code ? "text-accent bg-accent/10" : "text-white hover:bg-white/[0.07]"
+                }`}
+              >
+                <span className="font-mono font-semibold text-base">{c.code}</span>
+                <span className="text-sm text-muted">{c.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Export CSV */}
+        <button
+          onClick={() => {
+            view === "expenses"
+              ? exportExpensesCSV(expenses, currency, selectedMonth)
+              : exportSubscriptionsCSV(subscriptions, currency);
+            setShowMoreDrawer(false);
+          }}
+          className="w-full flex items-center justify-between px-4 py-3.5 text-sm text-white hover:bg-white/[0.07] transition-colors"
+        >
+          <span className="text-white/60">Export CSV</span>
+          <Download size={14} className="text-white/40" />
+        </button>
+        {/* Sign out */}
+        <button
+          onClick={() => { signOut(); setShowMoreDrawer(false); }}
+          className="w-full flex items-center justify-between px-4 py-3.5 text-sm text-danger hover:bg-white/[0.07] transition-colors"
+        >
+          <span>Sign out</span>
+          <LogOut size={14} />
+        </button>
+      </BottomDrawer>
+
+      {/* Bottom nav — mobile only */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 px-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}>
+        <div className="flex items-center h-14 p-1 rounded-full border border-white/[0.1] bg-black/40 backdrop-blur-xl">
+          {(["expenses", "subscriptions"] as View[]).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`flex-1 h-full rounded-full text-sm font-mono transition-colors ${
+                view === v
+                  ? "bg-white/15 text-white border border-white/15"
+                  : "text-white/40 hover:text-white/80"
+              }`}
+            >
+              {v === "expenses" ? "Expenses" : "Subscriptions"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-4 pb-32 sm:pb-24 flex flex-col gap-2" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
 
         {/* Header */}
         <div className="flex flex-col gap-5">
@@ -223,17 +377,24 @@ export default function Home() {
             <Logo className="h-5 w-auto" />
             <div className="flex items-center gap-2">
               <button
+                onClick={() => setShowMoreDrawer(true)}
+                aria-label="Menu"
+                className="sm:hidden w-8 h-8 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
+              >
+                <MoreHorizontal size={14} />
+              </button>
+              <button
                 onClick={() => signOut()}
                 aria-label="Sign out"
-                className="w-8 h-8 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
+                className="hidden sm:flex w-8 h-8 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
               >
                 <LogOut size={14} />
               </button>
             </div>
           </div>
 
-          {/* Row 2: Currency + Export + Month nav */}
-          <div className="flex items-center gap-2 w-full justify-between">
+          {/* Row 2 (desktop): Currency + Export + Month nav */}
+          <div className="hidden sm:flex items-center gap-2 w-full justify-between">
             {/* Currency picker */}
             <div ref={currencyRef} className="relative">
               <button
@@ -244,28 +405,6 @@ export default function Home() {
                 <ChevronDown size={11} />
               </button>
             </div>
-
-
-            <BottomDrawer
-              open={showCurrencyPicker}
-              onClose={() => setShowCurrencyPicker(false)}
-              title="Select Currency"
-            >
-              {CURRENCIES.map((c) => (
-                <button
-                  key={c.code}
-                  onClick={() => selectCurrency(c.code)}
-                  className={`w-full flex items-center justify-between px-4 py-3.5 text-sm transition-colors border-b border-white/10 last:border-0 ${
-                    currency === c.code
-                      ? "text-accent bg-accent/10"
-                      : "text-white hover:bg-white/[0.07]"
-                  }`}
-                >
-                  <span className="font-mono font-semibold text-base">{c.code}</span>
-                  <span className="text-sm text-muted">{c.name}</span>
-                </button>
-              ))}
-            </BottomDrawer>
 
             {/* Export + Month nav */}
             <div className="flex items-center gap-2">
@@ -298,8 +437,8 @@ export default function Home() {
               </button>
             </div>
           </div>
-          {/* Row 3: View toggle (full width) */}
-          <div className="flex items-center h-10 p-0.5 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md w-full">
+          {/* Row 3: View toggle (full width) — desktop only */}
+          <div className="hidden sm:flex items-center h-10 p-0.5 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md w-full">
             {(["expenses", "subscriptions"] as View[]).map((v) => (
               <button
                 key={v}

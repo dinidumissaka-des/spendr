@@ -17,14 +17,14 @@ export default function BottomDrawer({ open, onClose, title, children, contentCl
       {/* Backdrop */}
       <div
         onClick={onClose}
-        className={`fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/60 z-[60] transition-opacity duration-300 ${
           open ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       />
 
       {/* Sheet */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-50 max-w-2xl mx-auto bg-[#080f05]/85 backdrop-blur-2xl border-t border-x border-white/10 rounded-t-2xl transition-transform duration-300 ease-out ${
+        className={`fixed bottom-0 left-0 right-0 z-[70] max-w-2xl mx-auto bg-[#080f05]/85 backdrop-blur-2xl border-t border-x border-white/10 rounded-t-2xl transition-transform duration-300 ease-out ${
           open ? "translate-y-0" : "translate-y-full"
         }`}
       >
