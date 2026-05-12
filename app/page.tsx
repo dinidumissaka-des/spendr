@@ -161,8 +161,9 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (!user) return;
     fetchExpenses();
-  }, [fetchExpenses]);
+  }, [fetchExpenses, user]);
 
   useEffect(() => {
     if (user) fetchSubscriptions();
