@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { LogOut, ChevronDown, Download, MoreHorizontal } from "lucide-react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { LogOut, ChevronDown, Download, MoreHorizontal, Receipt, RefreshCw } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { getExpensesByMonth, getSubscriptions, onAuthStateChange, signOut, getUserSettings, upsertUserSettings } from "@/lib/supabase";
 import type { Expense, Subscription } from "@/types";
@@ -228,8 +228,8 @@ export default function Home() {
       <div
         className="sm:hidden fixed bottom-0 left-0 right-0 pointer-events-none"
         style={{
-          height: 'calc(env(safe-area-inset-bottom) + 9.25rem)',
-          background: 'linear-gradient(to bottom, transparent, #080f05 60%)',
+          height: 'calc(env(safe-area-inset-bottom) + 6rem)',
+          background: 'linear-gradient(to bottom, transparent, #080f05 70%)',
           zIndex: 45,
         }}
       />
@@ -357,25 +357,29 @@ export default function Home() {
       </BottomDrawer>
 
       {/* Bottom nav — mobile only */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 px-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}>
-        <div className="flex items-center h-14 p-1 rounded-full border border-white/[0.1] bg-black/40 backdrop-blur-xl">
-          {(["expenses", "subscriptions"] as View[]).map((v) => (
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 px-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="flex items-center h-16 p-1.5 rounded-2xl border border-white/[0.1] bg-black/60 backdrop-blur-xl mb-2">
+          {([
+            { key: "expenses", label: "Expenses", icon: Receipt },
+            { key: "subscriptions", label: "Subscriptions", icon: RefreshCw },
+          ] as { key: View; label: string; icon: React.ElementType }[]).map(({ key, label, icon: Icon }) => (
             <button
-              key={v}
-              onClick={() => setView(v)}
-              className={`flex-1 h-full rounded-full text-sm font-mono transition-colors ${
-                view === v
-                  ? "bg-white/15 text-white border border-white/15"
-                  : "text-white/40 hover:text-white/80"
+              key={key}
+              onClick={() => setView(key)}
+              className={`flex-1 h-full flex flex-col items-center justify-center gap-1 rounded-xl text-xs font-mono transition-colors ${
+                view === key
+                  ? "bg-white/10 text-white border border-white/10"
+                  : "text-white/35 hover:text-white/70"
               }`}
             >
-              {v === "expenses" ? "Expenses" : "Subscriptions"}
+              <Icon size={18} strokeWidth={1.8} />
+              <span>{label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 pb-32 sm:pb-24 flex flex-col gap-2" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
+      <div className="max-w-2xl mx-auto px-4 pb-28 sm:pb-24 flex flex-col gap-2" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
 
         {/* Header */}
         <div className="flex flex-col gap-5">

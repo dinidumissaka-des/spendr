@@ -15,20 +15,25 @@ export default function AuthForm() {
   const [error, setError] = useState<string | null>(null);
   const [signUpDone, setSignUpDone] = useState(false);
 
-  async function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!email.trim() || !password) {
+    const data = new FormData(e.currentTarget);
+    const emailVal = (data.get("email") as string).trim();
+    const passwordVal = data.get("password") as string;
+    if (!emailVal || !passwordVal) {
       setError("Please fill in all fields.");
       return;
     }
+    setEmail(emailVal);
+    setPassword(passwordVal);
     setError(null);
     setSubmitting(true);
     try {
       if (mode === "signup") {
-        await signUp(email.trim(), password);
+        await signUp(emailVal, passwordVal);
         setSignUpDone(true);
       } else {
-        await signIn(email.trim(), password);
+        await signIn(emailVal, passwordVal);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -74,6 +79,7 @@ export default function AuthForm() {
           <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Email</Label>
           <Input
             type="email"
+            name="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
@@ -84,6 +90,7 @@ export default function AuthForm() {
           <Label className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">Password</Label>
           <Input
             type="password"
+            name="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
