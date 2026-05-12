@@ -203,7 +203,7 @@ export default function Home() {
 
   if (user === null) {
     return (
-      <main className="relative z-10 text-text sm:min-h-screen sm:flex sm:items-center sm:justify-center sm:px-4">
+      <main className="relative z-10 text-text sm:min-h-screen sm:flex sm:items-center sm:justify-center sm:px-4" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="w-full sm:max-w-sm">
           <AuthForm />
         </div>
@@ -219,8 +219,8 @@ export default function Home() {
         {/* Header */}
         <div className="flex flex-col gap-5">
           {/* Row 1: Logo + Sign out */}
-          <div className="flex items-center justify-between">
-            <Logo className="h-7 w-auto" />
+          <div className="flex items-center justify-between pt-1 pb-2">
+            <Logo className="h-5 w-auto" />
             <div className="flex items-center gap-2">
               <button
                 onClick={() => signOut()}
