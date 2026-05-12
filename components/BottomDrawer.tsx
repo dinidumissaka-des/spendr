@@ -45,7 +45,7 @@ export default function BottomDrawer({ open, onClose, title, children, contentCl
           </div>
         )}
 
-        <div className={`overflow-y-auto max-h-[60vh] p-2 pb-8 ${contentClassName ?? ""}`}>
+        <div className={`overflow-y-auto max-h-[60vh] p-2 ${contentClassName ?? ""}`} style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
           {children}
         </div>
       </div>

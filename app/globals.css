@@ -36,4 +36,10 @@ html {
 
 @layer utilities {
   .text-balance { text-wrap: balance; }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
