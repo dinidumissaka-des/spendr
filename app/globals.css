@@ -43,3 +43,8 @@ html {
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+@media (max-width: 640px) {
+  ::-webkit-scrollbar { display: none; }
+  * { scrollbar-width: none; }
+}
