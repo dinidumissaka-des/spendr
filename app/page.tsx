@@ -213,6 +213,7 @@ export default function Home() {
 
   return (
     <main className="relative z-10 min-h-screen text-text">
+      <GradualBlur target="page" position="top" height="5rem" strength={1.5} divCount={6} curve="bezier" zIndex={10} />
       <GradualBlur target="page" position="bottom" height="5rem" strength={1.5} divCount={6} curve="bezier" zIndex={10} className="hidden sm:block" />
       <div className="max-w-2xl mx-auto px-4 pt-4 pb-8 sm:pb-24 flex flex-col gap-2">
 
