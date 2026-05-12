@@ -225,7 +225,7 @@ export default function Home() {
   return (
     <main className="relative z-10 min-h-screen text-text">
       <GradualBlur target="page" position="bottom" height="5rem" strength={1.5} divCount={6} curve="bezier" zIndex={10} className="hidden sm:block" />
-      <GradualBlur target="page" position="bottom" height="5rem" strength={1.5} divCount={6} curve="bezier" zIndex={10} className="sm:hidden" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 4.25rem)' }} />
+      <GradualBlur target="page" position="bottom" height="5rem" strength={1.5} divCount={6} curve="bezier" zIndex={-60} className="sm:hidden" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 4.25rem)' }} />
       {/* Currency picker drawer — desktop */}
       <BottomDrawer
         open={showCurrencyPicker}
