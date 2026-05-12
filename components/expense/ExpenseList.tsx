@@ -87,6 +87,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
   }
 
   async function handleDelete(id: string) {
+    if ("vibrate" in navigator) navigator.vibrate(18);
     setDeletingId(id);
     try {
       await deleteExpense(id);
@@ -298,7 +299,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                       onTouchMove={(e) => onTouchMove(e, expense.id)}
                       onTouchEnd={() => onTouchEnd(expense.id)}
                       onTouchCancel={() => snapBack(expense.id)}
-                      className="group relative flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors"
+                      className="group relative flex items-center gap-3 px-4 py-3.5 sm:hover:bg-white/5 transition-colors"
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-text text-sm font-sans truncate">{expense.description}</p>

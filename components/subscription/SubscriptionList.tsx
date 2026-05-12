@@ -46,6 +46,10 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
 
   const monthlyTotal = subscriptions.reduce((s, sub) => s + Number(sub.amount), 0);
 
+  function haptic(ms: number) {
+    if ("vibrate" in navigator) navigator.vibrate(ms);
+  }
+
   function handleTouchStart(e: React.TouchEvent) {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
@@ -55,7 +59,7 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
     const deltaX = touchStartX.current - e.changedTouches[0].clientX;
     const deltaY = Math.abs(touchStartY.current - e.changedTouches[0].clientY);
     if (deltaY > 40) return;
-    if (deltaX > 50) setSwipedId(subId);
+    if (deltaX > 50) { haptic(18); setSwipedId(subId); }
     else if (deltaX < -20) setSwipedId(null);
   }
 
@@ -96,6 +100,7 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
   }
 
   async function handleDelete(id: string) {
+    haptic(18);
     setSwipedId(null);
     setDeletingId(id);
     try {
@@ -211,7 +216,7 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
 
                   {/* Row content */}
                   <div
-                    className="flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-all duration-200"
+                    className="flex items-center gap-3 px-4 py-3.5 sm:hover:bg-white/5 transition-all duration-200"
                     style={{ transform: isSwiped ? "translateX(-88px)" : "translateX(0)" }}
                   >
                     <div className="flex-1 min-w-0">
