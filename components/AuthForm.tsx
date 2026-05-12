@@ -57,7 +57,7 @@ export default function AuthForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col min-h-[100dvh] px-6 pt-16 pb-10 sm:min-h-0 sm:bg-white/[0.07] sm:rounded-2xl sm:border sm:border-white/[0.1] sm:p-8 sm:gap-5"
+      className="flex flex-col min-h-[100dvh] px-6 sm:min-h-0 sm:bg-white/[0.07] sm:rounded-2xl sm:border sm:border-white/[0.1] sm:p-8 sm:gap-5 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[calc(env(safe-area-inset-bottom)+2.5rem)]"
     >
       {/* Logo + title */}
       <div className="flex items-center gap-3">
