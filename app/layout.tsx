@@ -17,6 +17,7 @@ const manrope = Manrope({
 export const viewport: Viewport = {
   viewportFit: "cover",
   themeColor: "#060e03",
+  colorScheme: "dark",
 };
 
 export const metadata: Metadata = {
@@ -26,6 +27,9 @@ export const metadata: Metadata = {
     title: "Minti | Personal expense tracker",
     description: "Track your daily expenses and subscriptions, set budgets, and stay on top of your spending — all in one place.",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
+  other: {
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
   },
 };
 
@@ -37,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={manrope.variable}>
       <body>
-        <div className="fixed inset-0 z-0 bg-[#060e03]">
+        <div className="fixed z-0 bg-[#060e03]" style={{ inset: 0, top: 'calc(-1 * env(safe-area-inset-top))' }}>
           <LightRays
             raysOrigin="top-center"
             raysColor="#9FE870"
