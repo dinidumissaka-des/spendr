@@ -9,6 +9,7 @@ import DatePickerDrawer from "@/components/expense/DatePickerDrawer";
 import CategoryPicker from "@/components/expense/CategoryPicker";
 import GlassSurface from "@/components/GlassSurface";
 import { CATEGORY_COLORS } from "@/lib/categories";
+import { guessCategory } from "@/lib/categorize";
 
 const PRESET_CATEGORIES = Object.keys(CATEGORY_COLORS);
 
@@ -40,6 +41,15 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
       setAiSelected(false);
       return;
     }
+
+    const keyword = guessCategory(description);
+    if (keyword) {
+      setCategory(keyword);
+      setAiSelected(true);
+      setAiLoading(false);
+      return;
+    }
+
     setAiLoading(true);
     setAiSelected(false);
     const timer = setTimeout(async () => {
