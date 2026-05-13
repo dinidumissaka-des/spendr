@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, FormEvent } from "react";
-import { Plus, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect, FormEvent } from "react";
+import { Plus, Loader2, Sparkles } from "lucide-react";
 import { addExpense } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,39 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
   const amountRef = useRef<HTMLInputElement>(null);
   const [showDateDrawer, setShowDateDrawer] = useState(false);
   const [showCategoryDrawer, setShowCategoryDrawer] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSelected, setAiSelected] = useState(false);
+
+  useEffect(() => {
+    if (description.trim().length < 2) {
+      setAiLoading(false);
+      setAiSelected(false);
+      return;
+    }
+    setAiLoading(true);
+    setAiSelected(false);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/categorize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ description }),
+        });
+        if (res.ok) {
+          const { category: suggested } = await res.json();
+          if (suggested && PRESET_CATEGORIES.includes(suggested)) {
+            setCategory(suggested);
+            setAiSelected(true);
+          }
+        }
+      } catch {
+        // silently fail — user can pick manually
+      } finally {
+        setAiLoading(false);
+      }
+    }, 700);
+    return () => clearTimeout(timer);
+  }, [description]);
 
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value.replace(/,/g, "");
@@ -74,6 +107,7 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
       setAmount("");
       setDisplayAmount("");
       setDate(new Date().toISOString().split("T")[0]);
+      setAiSelected(false);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2000);
       onExpenseAdded();
@@ -119,12 +153,14 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
         <button
           type="button"
           onClick={() => { setShowCategoryDrawer((v) => !v); setShowDateDrawer(false); }}
-          className={`h-[52px] flex items-center justify-center px-4 rounded-full border backdrop-blur-md text-sm text-white transition-colors ${
+          className={`h-[52px] flex items-center justify-center gap-1.5 px-4 rounded-full border backdrop-blur-md text-sm text-white transition-colors ${
             showCategoryDrawer
               ? "border-white/25 bg-white/10"
               : "border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10"
           }`}
         >
+          {aiLoading && <Loader2 size={12} className="animate-spin text-white/40 shrink-0" />}
+          {!aiLoading && aiSelected && <Sparkles size={12} className="text-[#9FE870] shrink-0" />}
           <span className="font-medium truncate">{isCustom ? (customCategory.trim() || "Custom") : category}</span>
         </button>
 
@@ -148,6 +184,7 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
           isCustom={isCustom}
           onSelect={(cat) => {
             setCategory(cat);
+            setAiSelected(false);
             setShowCategoryDrawer(false);
           }}
         />
