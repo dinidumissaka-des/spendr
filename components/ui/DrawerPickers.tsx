@@ -105,7 +105,6 @@ export function CategoryList({
           onClick={() => onSelect(cat)}
           className={`flex items-center gap-3 px-4 py-4 rounded-xl text-left transition-colors ${selected === cat ? "bg-white/10" : "hover:bg-white/5"}`}
         >
-          <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: CATEGORY_COLORS[cat] }} />
           <span className="flex-1 text-[15px] font-sans text-white">{cat}</span>
           {selected === cat && <Check size={15} className="flex-shrink-0" style={{ color: ACCENT }} />}
         </button>
@@ -116,7 +115,6 @@ export function CategoryList({
           onClick={() => onSelect(value)}
           className={`flex items-center gap-3 px-4 py-4 rounded-xl text-left transition-colors ${selected === value ? "bg-white/10" : "hover:bg-white/5"}`}
         >
-          <span className="w-3 h-3 rounded-full flex-shrink-0 border border-white/30" />
           <span className="flex-1 text-[15px] font-sans text-white/60">{label}</span>
           {selected === value && <Check size={15} className="flex-shrink-0" style={{ color: ACCENT }} />}
         </button>
