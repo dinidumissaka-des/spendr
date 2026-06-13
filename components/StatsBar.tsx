@@ -21,12 +21,6 @@ function daysElapsedInMonth(year: number, month: number, isCurrentMonth: boolean
   return new Date(year, month, 0).getDate();
 }
 
-interface Stat {
-  label: string;
-  value: string;
-  hero: boolean;
-}
-
 const StatsBar = memo(function StatsBar({ expenses, selectedMonth, currency, subscriptionsTotal = 0 }: Props) {
   const today = todayISO();
   const currentMonth = new Date().getMonth() + 1;
@@ -42,46 +36,39 @@ const StatsBar = memo(function StatsBar({ expenses, selectedMonth, currency, sub
   const days = daysElapsedInMonth(selectedMonth.year, selectedMonth.month, isCurrentMonth);
   const avgPerDay = expenses.length > 0 ? monthTotal / days : 0;
 
-  const stats: Stat[] = [
-    { label: isCurrentMonth ? "This Month" : "Month Total", value: formatAmount(monthTotal, currency), hero: true },
-    { label: "Today",   value: formatAmount(todayTotal, currency), hero: false },
-    { label: "Avg/Day", value: formatAmount(avgPerDay, currency),  hero: false },
-  ];
-
-  const [hero, ...rest] = stats;
-
   return (
     <div className="flex flex-col gap-2">
-      {/* Hero stat — full width */}
-      <GlassSurface
-        borderRadius={28}
-        style={{ boxShadow: "0 0 12px rgba(159,232,112,0.07)", borderColor: "rgba(159,232,112,0.3)" }}
-      >
-        <div className="pt-4 pb-5 px-5 flex flex-col gap-1 w-full">
-          <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold leading-none">
-            {hero.label}
-          </span>
-          <span className="font-mono text-3xl font-bold text-white leading-tight">
-            {hero.value}
-          </span>
+      {/* Hero — no container */}
+      <div className="px-1 pt-2 pb-5 flex flex-col gap-1">
+        <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold leading-none">
+          {isCurrentMonth ? "This Month" : "Month Total"}
+        </span>
+        <span className="font-mono text-5xl font-bold text-white leading-tight">
+          {formatAmount(monthTotal, currency)}
+        </span>
+      </div>
+
+      {/* Today + Avg/Day — one container */}
+      <GlassSurface borderRadius={28}>
+        <div className="w-full grid grid-cols-2 divide-x divide-white/[0.07]">
+          <div className="px-5 pt-3 pb-4 flex flex-col gap-1">
+            <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold leading-none">
+              Today
+            </span>
+            <span className="font-mono text-2xl font-bold text-white leading-tight">
+              {formatAmount(todayTotal, currency)}
+            </span>
+          </div>
+          <div className="px-5 pt-3 pb-4 flex flex-col gap-1">
+            <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold leading-none">
+              Avg/Day
+            </span>
+            <span className="font-mono text-2xl font-bold text-white leading-tight">
+              {formatAmount(avgPerDay, currency)}
+            </span>
+          </div>
         </div>
       </GlassSurface>
-
-      {/* Secondary stats — side by side */}
-      <div className="grid grid-cols-2 gap-2">
-        {rest.map((stat) => (
-          <GlassSurface key={stat.label} borderRadius={28}>
-            <div className="pt-3 pb-4 px-4 flex flex-col gap-1 w-full">
-              <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold leading-none">
-                {stat.label}
-              </span>
-              <span className="font-mono text-xl font-bold text-white leading-tight">
-                {stat.value}
-              </span>
-            </div>
-          </GlassSurface>
-        ))}
-      </div>
     </div>
   );
 });

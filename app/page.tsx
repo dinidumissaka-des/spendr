@@ -389,7 +389,7 @@ export default function Home() {
 
       {/* Bottom nav — mobile only */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 px-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="flex items-center h-16 p-1.5 rounded-full border border-white/[0.1] bg-black/40 backdrop-blur-xl">
+        <div className="flex items-center h-16 p-1.5 rounded-2xl border border-white/[0.1] bg-black/40 backdrop-blur-xl">
           {([
             { key: "expenses", label: "Expenses", icon: CreditCard },
             { key: "subscriptions", label: "Subscriptions", icon: RefreshCw },
