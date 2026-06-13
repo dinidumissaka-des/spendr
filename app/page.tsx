@@ -393,7 +393,7 @@ export default function Home() {
         <div className="flex items-center h-16 p-1.5 rounded-3xl border border-white/[0.1] bg-black/40 backdrop-blur-xl">
           {([
             { key: "expenses", label: "Expenses", Icon: CreditCard },
-            { key: "subscriptions", label: "Subscriptions", Icon: ArrowsClockwise },
+            { key: "subscriptions", label: "Bills", Icon: ArrowsClockwise },
             { key: "income", label: "Income", Icon: Wallet },
           ] as { key: View; label: string; Icon: React.ElementType }[]).map(({ key, label, Icon }) => {
             const active = view === key;
