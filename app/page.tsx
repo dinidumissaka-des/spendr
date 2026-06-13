@@ -389,7 +389,7 @@ export default function Home() {
 
       {/* Bottom nav — mobile only */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}>
-        <div className="flex items-center h-16 p-1.5 rounded-2xl border border-white/[0.1] bg-black/40 backdrop-blur-xl">
+        <div className="flex items-center h-16 p-1.5 rounded-3xl border border-white/[0.1] bg-black/40 backdrop-blur-xl">
           {([
             { key: "expenses", label: "Expenses", icon: CreditCard },
             { key: "subscriptions", label: "Subscriptions", icon: RefreshCw },
@@ -408,6 +408,13 @@ export default function Home() {
               <span>{label}</span>
             </button>
           ))}
+          <button
+            onClick={() => router.push("/insights")}
+            className="flex-1 h-full flex flex-col items-center justify-center gap-1 rounded-full text-xs font-mono transition-colors text-white/35 hover:text-white/70"
+          >
+            <Lightbulb size={18} strokeWidth={1.8} />
+            <span>Insights</span>
+          </button>
         </div>
       </div>
 
