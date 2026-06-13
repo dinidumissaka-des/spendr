@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, ChevronDown, Download, MoreHorizontal, CreditCard, RefreshCw, Wallet, Lightbulb } from "lucide-react";
+import { LogOut, ChevronDown, Download, MoreHorizontal } from "lucide-react";
+import { CreditCard, ArrowsClockwise, Wallet, Lightbulb } from "@phosphor-icons/react";
 import type { User } from "@supabase/supabase-js";
 import { getExpensesByMonth, getSubscriptions, onAuthStateChange, signOut, getUserSettings, upsertUserSettings } from "@/lib/supabase";
 import type { Expense, Subscription } from "@/types";
@@ -391,10 +392,10 @@ export default function Home() {
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 px-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.25rem)' }}>
         <div className="flex items-center h-16 p-1.5 rounded-3xl border border-white/[0.1] bg-black/40 backdrop-blur-xl">
           {([
-            { key: "expenses", label: "Expenses", icon: CreditCard },
-            { key: "subscriptions", label: "Subscriptions", icon: RefreshCw },
-            { key: "income", label: "Income", icon: Wallet },
-          ] as { key: View; label: string; icon: React.ElementType }[]).map(({ key, label, icon: Icon }) => {
+            { key: "expenses", label: "Expenses", Icon: CreditCard },
+            { key: "subscriptions", label: "Subscriptions", Icon: ArrowsClockwise },
+            { key: "income", label: "Income", Icon: Wallet },
+          ] as { key: View; label: string; Icon: React.ElementType }[]).map(({ key, label, Icon }) => {
             const active = view === key;
             return (
               <button
@@ -406,9 +407,7 @@ export default function Home() {
                     : "text-white/35 hover:text-white/70"
                 }`}
               >
-                <span className={active ? "[&>svg>*]:fill-current [&>svg>*]:stroke-none" : ""}>
-                  <Icon size={22} strokeWidth={active ? 0 : 1.8} />
-                </span>
+                <Icon size={22} weight={active ? "fill" : "regular"} />
                 <span>{label}</span>
               </button>
             );
@@ -417,7 +416,7 @@ export default function Home() {
             onClick={() => router.push("/insights")}
             className="flex-1 h-full flex flex-col items-center justify-center gap-1 rounded-full text-xs font-mono transition-colors text-white/35 hover:text-white/70"
           >
-            <Lightbulb size={22} strokeWidth={1.8} />
+            <Lightbulb size={22} weight="regular" />
             <span>Insights</span>
           </button>
         </div>
