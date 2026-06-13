@@ -6,7 +6,6 @@ import InstallPrompt from "@/components/InstallPrompt";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 
 const LightRays = dynamic(() => import("@/components/background/LightRays"), { ssr: false });
-const GrainOverlay = dynamic(() => import("@/components/background/GrainOverlay"), { ssr: false });
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -69,7 +68,6 @@ export default function RootLayout({
           />
         </div>
         {children}
-        <GrainOverlay />
         <InstallPrompt />
         <ServiceWorkerRegistration />
       </body>
