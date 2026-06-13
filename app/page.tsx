@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { LogOut, ChevronDown, Download, MoreHorizontal, CreditCard, RefreshCw, BarChart2 } from "lucide-react";
+import { LogOut, ChevronDown, Download, MoreHorizontal, CreditCard, RefreshCw, Lightbulb } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { getExpensesByMonth, getSubscriptions, onAuthStateChange, signOut, getUserSettings, upsertUserSettings } from "@/lib/supabase";
 import type { Expense, Subscription } from "@/types";
@@ -19,10 +19,11 @@ import BudgetBar from "@/components/BudgetBar";
 import ExpenseList from "@/components/expense/ExpenseList";
 import SubscriptionList from "@/components/subscription/SubscriptionList";
 import AnalyticsView from "@/components/analytics/AnalyticsView";
+import IncomeSection from "@/components/analytics/IncomeSection";
 import BottomDrawer from "@/components/BottomDrawer";
 
 type Filter = "all" | "today" | "week";
-type View = "expenses" | "subscriptions" | "analytics";
+type View = "expenses" | "subscriptions" | "insights";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -382,7 +383,7 @@ export default function Home() {
           {([
             { key: "expenses", label: "Expenses", icon: CreditCard },
             { key: "subscriptions", label: "Subscriptions", icon: RefreshCw },
-            { key: "analytics", label: "Analytics", icon: BarChart2 },
+            { key: "insights", label: "Insights", icon: Lightbulb },
           ] as { key: View; label: string; icon: React.ElementType }[]).map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -473,7 +474,7 @@ export default function Home() {
           </div>
           {/* Row 3: View toggle (full width) — desktop only */}
           <div className="hidden sm:flex items-center h-10 p-0.5 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md w-full">
-            {(["expenses", "subscriptions", "analytics"] as View[]).map((v) => (
+            {(["expenses", "subscriptions", "insights"] as View[]).map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
@@ -483,7 +484,7 @@ export default function Home() {
                     : "text-white/40 hover:text-white/80"
                 }`}
               >
-                {v === "expenses" ? "Expenses" : v === "subscriptions" ? "Subscriptions" : "Analytics"}
+                {v === "expenses" ? "Expenses" : v === "subscriptions" ? "Subscriptions" : "Insights"}
               </button>
             ))}
           </div>
@@ -539,6 +540,16 @@ export default function Home() {
                 />
               )}
             </div>
+
+            <IncomeSection
+              user={user}
+              selectedMonth={selectedMonth}
+              currency={currency}
+              monthlyIncome={monthlyIncome}
+              onMonthlyIncomeChange={saveMonthlyIncome}
+              expenses={expenses}
+              subscriptions={subscriptions}
+            />
           </>
         ) : view === "subscriptions" ? (
           <>
@@ -552,13 +563,11 @@ export default function Home() {
           </>
         ) : (
           <AnalyticsView
-            user={user}
             expenses={expenses}
             subscriptions={subscriptions}
             selectedMonth={selectedMonth}
             currency={currency}
             monthlyIncome={monthlyIncome}
-            onMonthlyIncomeChange={saveMonthlyIncome}
           />
         )}
       </div>
