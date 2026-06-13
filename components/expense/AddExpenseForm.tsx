@@ -6,6 +6,8 @@ import { addExpense } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import GlassSurface from "@/components/GlassSurface";
+import BottomDrawer from "@/components/BottomDrawer";
+import { CalendarPicker, CategoryList } from "@/components/ui/DrawerPickers";
 import { CATEGORY_COLORS } from "@/lib/categories";
 
 const PRESET_CATEGORIES = Object.keys(CATEGORY_COLORS);
@@ -25,6 +27,8 @@ function formatDateLabel(iso: string) {
   return d.toLocaleDateString("en", { month: "short", day: "numeric" });
 }
 
+// ─── Main Form ────────────────────────────────────────────────────────────────
+
 export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Props) {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState(PRESET_CATEGORIES[0]);
@@ -36,6 +40,8 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const amountRef = useRef<HTMLInputElement>(null);
+  const [showDateDrawer, setShowDateDrawer] = useState(false);
+  const [showCategoryDrawer, setShowCategoryDrawer] = useState(false);
 
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value.replace(/,/g, "");
@@ -60,7 +66,6 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
       setError("Amount must be greater than 0.");
       return;
     }
-
     setError(null);
     setSubmitting(true);
     try {
@@ -70,15 +75,9 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
       const ampm = hours >= 12 ? "PM" : "AM";
       const h12 = String(hours % 12 || 12);
       const time = `${h12}:${mins} ${ampm}`;
-
       await addExpense({ description: description.trim(), category: effectiveCategory, amount: parsed, date, time }, userId);
-
-      setDescription("");
-      setCategory(PRESET_CATEGORIES[0]);
-      setCustomCategory("");
-      setAmount("");
-      setDisplayAmount("");
-      setDate(new Date().toISOString().split("T")[0]);
+      setDescription(""); setCategory(PRESET_CATEGORIES[0]); setCustomCategory("");
+      setAmount(""); setDisplayAmount(""); setDate(new Date().toISOString().split("T")[0]);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2000);
       onExpenseAdded();
@@ -90,91 +89,89 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
   }
 
   return (
-    <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
-    <div className="p-6 flex flex-col gap-5 w-full">
-      {/* Hero amount input */}
-      <div className="flex flex-col items-end gap-1 py-4">
-        <span className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">{currency}</span>
-        <input
-          ref={amountRef}
-          type="text"
-          inputMode="decimal"
-          value={displayAmount}
-          onChange={handleAmountChange}
-          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          placeholder="0.00"
-          aria-label="Amount"
-          className="w-full bg-transparent text-right text-6xl font-bold text-white placeholder:text-white/25 outline-none border-none focus-visible:outline-none"
-        />
-        <div className="h-px w-16 bg-white/[0.1] mt-1" />
-      </div>
+    <>
+      <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
+        <div className="p-6 flex flex-col gap-5 w-full">
+          {/* Hero amount */}
+          <div className="flex flex-col items-end gap-1 py-4">
+            <span className="font-mono text-xs text-muted uppercase tracking-widest font-semibold">{currency}</span>
+            <input
+              ref={amountRef}
+              type="text"
+              inputMode="decimal"
+              value={displayAmount}
+              onChange={handleAmountChange}
+              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+              placeholder="0.00"
+              aria-label="Amount"
+              className="w-full bg-transparent text-right text-6xl font-bold text-white placeholder:text-white/25 outline-none border-none focus-visible:outline-none"
+            />
+            <div className="h-px w-16 bg-white/[0.1] mt-1" />
+          </div>
 
-      {/* Description */}
-      <Input
-        type="text"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && amountRef.current?.focus()}
-        placeholder="Lunch at Nando's"
-      />
-
-      {/* Category + Date row — native pickers overlaid */}
-      <div className="grid grid-cols-2 gap-2">
-        {/* Category */}
-        <div className="relative h-[52px] flex items-center justify-center px-4 rounded-full border border-white/10 bg-white/5 cursor-pointer overflow-hidden">
-          <span className="font-medium text-sm text-white truncate pointer-events-none">
-            {isCustom ? (customCategory.trim() || "Custom") : category}
-          </span>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            aria-label="Category"
-          >
-            {PRESET_CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-            <option value="__custom__">Custom…</option>
-          </select>
-        </div>
-
-        {/* Date */}
-        <div className="relative h-[52px] flex items-center justify-center px-4 rounded-full border border-white/10 bg-white/5 cursor-pointer overflow-hidden">
-          <span className="font-medium text-sm text-white pointer-events-none">
-            {formatDateLabel(date)}
-          </span>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => e.target.value && setDate(e.target.value)}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            aria-label="Date"
+          {/* Description */}
+          <Input
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && amountRef.current?.focus()}
+            placeholder="Lunch at Nando's"
           />
+
+          {/* Category + Date row */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setShowCategoryDrawer(true)}
+              className="h-[52px] flex items-center justify-center px-4 rounded-full border border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10 transition-colors"
+            >
+              <span className="font-medium text-sm text-white truncate">
+                {isCustom ? (customCategory.trim() || "Custom") : category}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowDateDrawer(true)}
+              className="h-[52px] flex items-center justify-center px-4 rounded-full border border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10 transition-colors"
+            >
+              <span className="font-medium text-sm text-white">{formatDateLabel(date)}</span>
+            </button>
+          </div>
+
+          {isCustom && (
+            <Input
+              type="text"
+              value={customCategory}
+              onChange={(e) => setCustomCategory(e.target.value)}
+              placeholder="Enter category name"
+              autoFocus
+            />
+          )}
+
+          {error && <p className="text-danger text-sm">{error}</p>}
+          {success && <p className="text-accent text-sm">Expense added!</p>}
+
+          <Button onClick={handleSubmit} disabled={submitting} className="w-full flex items-center justify-center gap-2">
+            {submitting ? <Loader2 size={17} className="animate-spin" /> : <Plus size={17} strokeWidth={2.5} />}
+            <span>{submitting ? "Adding…" : "Add Expense"}</span>
+          </Button>
         </div>
-      </div>
+      </GlassSurface>
 
-      {isCustom && (
-        <Input
-          type="text"
-          value={customCategory}
-          onChange={(e) => setCustomCategory(e.target.value)}
-          placeholder="Enter category name"
-          autoFocus
+      {/* Date bottom drawer */}
+      <BottomDrawer open={showDateDrawer} onClose={() => setShowDateDrawer(false)} title="Select Date">
+        <CalendarPicker value={date} onChange={setDate} onClose={() => setShowDateDrawer(false)} />
+      </BottomDrawer>
+
+      {/* Category bottom drawer */}
+      <BottomDrawer open={showCategoryDrawer} onClose={() => setShowCategoryDrawer(false)} title="Category">
+        <CategoryList
+          selected={category}
+          onSelect={(cat) => { setCategory(cat); setShowCategoryDrawer(false); }}
+          extraOptions={[{ value: "__custom__", label: "Custom…" }]}
         />
-      )}
-
-      {error && <p className="text-danger text-sm">{error}</p>}
-      {success && <p className="text-accent text-sm">Expense added!</p>}
-
-      <Button
-        onClick={handleSubmit}
-        disabled={submitting}
-        className="w-full flex items-center justify-center gap-2"
-      >
-        {submitting ? <Loader2 size={17} className="animate-spin" /> : <Plus size={17} strokeWidth={2.5} />}
-        <span>{submitting ? "Adding…" : "Add Expense"}</span>
-      </Button>
-    </div>
-    </GlassSurface>
+      </BottomDrawer>
+    </>
   );
 }

@@ -6,6 +6,8 @@ import { deleteExpense, updateExpense } from "@/lib/supabase";
 import { formatAmount } from "@/lib/currencies";
 import { CATEGORY_COLORS } from "@/lib/categories";
 import GlassSurface from "@/components/GlassSurface";
+import BottomDrawer from "@/components/BottomDrawer";
+import { CalendarPicker, CategoryList } from "@/components/ui/DrawerPickers";
 import type { Expense } from "@/types";
 
 const PRESET_CATEGORIES = Object.keys(CATEGORY_COLORS);
@@ -41,6 +43,8 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editState, setEditState] = useState<EditState | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showCatDrawer, setShowCatDrawer] = useState(false);
+  const [showDateDrawer, setShowDateDrawer] = useState(false);
 
   const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const touchStartX = useRef(0);
@@ -215,22 +219,21 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                           step="0.01"
                         />
                       </div>
-                      <select
-                        className="w-full bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-[15px] text-white outline-none focus:border-white/30 appearance-none cursor-pointer"
-                        value={editState.category}
-                        onChange={(e) => setEditState({ ...editState, category: e.target.value })}
+                      <button
+                        type="button"
+                        onClick={() => setShowCatDrawer(true)}
+                        className="w-full bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-[15px] text-white text-left hover:border-white/30 transition-colors"
                       >
-                        {PRESET_CATEGORIES.map((c) => (
-                          <option key={c} value={c} className="bg-[#0a120a]">{c}</option>
-                        ))}
-                      </select>
+                        {editState.category}
+                      </button>
                       <div className="flex gap-2">
-                        <input
-                          type="date"
-                          className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-[15px] text-white outline-none focus:border-white/30 [color-scheme:dark]"
-                          value={editState.date}
-                          onChange={(e) => setEditState({ ...editState, date: e.target.value })}
-                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowDateDrawer(true)}
+                          className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-[15px] text-white text-left hover:border-white/30 transition-colors"
+                        >
+                          {formatDateLabel(editState.date)}
+                        </button>
                         <button
                           onClick={() => handleSave(expense.id)}
                           disabled={saving}
@@ -329,6 +332,25 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
           </div>
         );
       })}
+
+      <BottomDrawer open={showCatDrawer} onClose={() => setShowCatDrawer(false)} title="Category">
+        {editState && (
+          <CategoryList
+            selected={editState.category}
+            onSelect={(cat) => { setEditState({ ...editState, category: cat }); setShowCatDrawer(false); }}
+          />
+        )}
+      </BottomDrawer>
+
+      <BottomDrawer open={showDateDrawer} onClose={() => setShowDateDrawer(false)} title="Select Date">
+        {editState && (
+          <CalendarPicker
+            value={editState.date}
+            onChange={(d) => setEditState({ ...editState, date: d })}
+            onClose={() => setShowDateDrawer(false)}
+          />
+        )}
+      </BottomDrawer>
     </div>
   );
 }

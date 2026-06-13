@@ -7,6 +7,8 @@ import type { Expense, Subscription, Income } from "@/types";
 import { getIncomeByMonth, addIncome, deleteIncome, upsertUserSettings } from "@/lib/supabase";
 import { formatAmount } from "@/lib/currencies";
 import GlassSurface from "@/components/GlassSurface";
+import BottomDrawer from "@/components/BottomDrawer";
+import { CalendarPicker, SourceList } from "@/components/ui/DrawerPickers";
 
 function todayISO() {
   return new Date().toISOString().split("T")[0];
@@ -41,6 +43,8 @@ const IncomeSection = memo(function IncomeSection({
   const [newSource, setNewSource] = useState("Salary");
   const [newAmount, setNewAmount] = useState("");
   const [newDate, setNewDate] = useState(todayISO());
+  const [showSourceDrawer, setShowSourceDrawer] = useState(false);
+  const [showDateDrawer, setShowDateDrawer] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -271,15 +275,13 @@ const IncomeSection = memo(function IncomeSection({
           {showAddForm && (
             <div className="px-4 py-3 flex flex-col gap-2 border-b border-white/[0.07] bg-white/[0.03]">
               <div className="flex gap-2">
-                <select
-                  value={newSource}
-                  onChange={(e) => setNewSource(e.target.value)}
-                  className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-[15px] text-white outline-none focus:border-white/30 appearance-none cursor-pointer"
+                <button
+                  type="button"
+                  onClick={() => setShowSourceDrawer(true)}
+                  className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-[15px] text-white text-left hover:border-white/30 transition-colors"
                 >
-                  {INCOME_SOURCES.map((s) => (
-                    <option key={s} value={s} className="bg-[#0a120a]">{s}</option>
-                  ))}
-                </select>
+                  {newSource}
+                </button>
                 <input
                   ref={amountRef}
                   type="number"
@@ -291,12 +293,13 @@ const IncomeSection = memo(function IncomeSection({
                 />
               </div>
               <div className="flex gap-2">
-                <input
-                  type="date"
-                  value={newDate}
-                  onChange={(e) => setNewDate(e.target.value)}
-                  className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-[15px] text-white outline-none focus:border-white/30 [color-scheme:dark]"
-                />
+                <button
+                  type="button"
+                  onClick={() => setShowDateDrawer(true)}
+                  className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-[15px] text-white text-left hover:border-white/30 transition-colors"
+                >
+                  {newDate}
+                </button>
                 <button
                   onClick={handleAddEntry}
                   disabled={saving}
@@ -384,6 +387,22 @@ const IncomeSection = memo(function IncomeSection({
           )}
         </div>
       </GlassSurface>
+
+      <BottomDrawer open={showSourceDrawer} onClose={() => setShowSourceDrawer(false)} title="Income Source">
+        <SourceList
+          sources={INCOME_SOURCES}
+          selected={newSource}
+          onSelect={(s) => { setNewSource(s); setShowSourceDrawer(false); }}
+        />
+      </BottomDrawer>
+
+      <BottomDrawer open={showDateDrawer} onClose={() => setShowDateDrawer(false)} title="Select Date">
+        <CalendarPicker
+          value={newDate}
+          onChange={setNewDate}
+          onClose={() => setShowDateDrawer(false)}
+        />
+      </BottomDrawer>
     </div>
   );
 });
