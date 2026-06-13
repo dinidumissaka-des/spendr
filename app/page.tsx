@@ -21,10 +21,11 @@ import BudgetBar from "@/components/BudgetBar";
 import ExpenseList from "@/components/expense/ExpenseList";
 import SubscriptionList from "@/components/subscription/SubscriptionList";
 import IncomeSection from "@/components/analytics/IncomeSection";
+import AnalyticsView from "@/components/analytics/AnalyticsView";
 import BottomDrawer from "@/components/BottomDrawer";
 
 type Filter = "all" | "today" | "week";
-type View = "expenses" | "subscriptions" | "income";
+type View = "expenses" | "subscriptions" | "income" | "insights";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -358,7 +359,7 @@ export default function Home() {
 
         {/* Insights */}
         <button
-          onClick={() => { setShowMoreDrawer(false); router.push("/insights"); }}
+          onClick={() => { setShowMoreDrawer(false); setView("insights"); }}
           className="w-full flex items-center justify-between px-4 py-4 text-[15px] text-white hover:bg-white/[0.07] transition-colors"
         >
           <span className="text-white/60">Insights</span>
@@ -413,10 +414,14 @@ export default function Home() {
             );
           })}
           <button
-            onClick={() => router.push("/insights")}
-            className="flex-1 h-full flex flex-col items-center justify-center gap-1 rounded-full text-xs font-mono transition-colors text-white/35 hover:text-white/70"
+            onClick={() => setView("insights")}
+            className={`flex-1 h-full flex flex-col items-center justify-center gap-1 rounded-full text-xs font-mono transition-all ${
+              view === "insights"
+                ? "bg-white/15 text-white border border-white/15"
+                : "text-white/35 hover:text-white/70"
+            }`}
           >
-            <Lightbulb size={22} weight="regular" />
+            <Lightbulb size={22} weight={view === "insights" ? "fill" : "regular"} />
             <span>Insights</span>
           </button>
         </div>
@@ -512,7 +517,9 @@ export default function Home() {
         </div>
 
         {/* Stats */}
-        <StatsBar expenses={expenses} selectedMonth={selectedMonth} currency={currency} subscriptionsTotal={subscriptionsTotal} />
+        {view !== "insights" && (
+          <StatsBar expenses={expenses} selectedMonth={selectedMonth} currency={currency} subscriptionsTotal={subscriptionsTotal} />
+        )}
 
         {view === "expenses" ? (
           <>
@@ -573,7 +580,7 @@ export default function Home() {
               onChanged={fetchSubscriptions}
             />
           </>
-        ) : (
+        ) : view === "income" ? (
           <IncomeSection
             user={user}
             selectedMonth={selectedMonth}
@@ -582,6 +589,14 @@ export default function Home() {
             onMonthlyIncomeChange={saveMonthlyIncome}
             expenses={expenses}
             subscriptions={subscriptions}
+          />
+        ) : (
+          <AnalyticsView
+            expenses={expenses}
+            subscriptions={subscriptions}
+            selectedMonth={selectedMonth}
+            currency={currency}
+            monthlyIncome={monthlyIncome}
           />
         )}
       </div>
