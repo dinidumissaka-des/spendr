@@ -422,7 +422,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 pb-28 sm:pb-24 flex flex-col gap-2" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
+      <div className="max-w-2xl mx-auto px-4 pb-28 sm:pb-24 flex flex-col gap-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
 
         {/* Header */}
         <div className="flex flex-col gap-5">
