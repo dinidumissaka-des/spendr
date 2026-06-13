@@ -47,6 +47,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${manrope.variable} ${fraunces.variable}`}>
       <body>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:z-[200] focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-accent focus:text-[#163300] focus:rounded-lg focus:font-semibold focus:text-sm"
+        >
+          Skip to main content
+        </a>
         <div className="fixed z-0 bg-[#060e03]" style={{ inset: 0, top: 'calc(-1 * env(safe-area-inset-top))' }}>
           <LightRays
             raysOrigin="top-center"

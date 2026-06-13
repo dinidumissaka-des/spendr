@@ -24,6 +24,9 @@ export default function BottomDrawer({ open, onClose, title, children, contentCl
 
       {/* Sheet */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
         className={`fixed bottom-0 left-0 right-0 z-[70] max-w-2xl mx-auto bg-[#080f05]/85 backdrop-blur-2xl border-t border-x border-white/10 rounded-t-2xl transition-transform duration-300 ease-out ${
           open ? "translate-y-0" : "translate-y-full"
         }`}
@@ -38,6 +41,7 @@ export default function BottomDrawer({ open, onClose, title, children, contentCl
             <p className="font-sans font-semibold text-white text-base">{title}</p>
             <button
               onClick={onClose}
+              aria-label="Close"
               className="w-7 h-7 flex items-center justify-center rounded-full bg-white/[0.07] border border-white/[0.1] text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
             >
               <X size={13} />

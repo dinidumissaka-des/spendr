@@ -147,11 +147,11 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
                       >
                         {editState.category}
                       </button>
-                      <button onClick={() => handleSave(sub.id)} disabled={saving}
+                      <button onClick={() => handleSave(sub.id)} disabled={saving} aria-label="Save changes"
                         className="w-9 h-9 flex items-center justify-center rounded-lg bg-accent text-[#163300] hover:bg-accent/85 disabled:opacity-50 flex-shrink-0">
                         <Check size={15} />
                       </button>
-                      <button onClick={() => { setEditingId(null); setEditState(null); }}
+                      <button onClick={() => { setEditingId(null); setEditState(null); }} aria-label="Cancel editing"
                         className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0">
                         <X size={15} />
                       </button>
@@ -182,6 +182,7 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
                   <div className={`absolute right-0 top-0 bottom-0 flex items-center gap-1 px-2 sm:hidden transition-opacity duration-200 ${isSwiped ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
                     <button
                       onClick={() => startEdit(sub)}
+                      aria-label="Edit subscription"
                       className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 text-white"
                     >
                       <Pencil size={14} />
@@ -189,6 +190,7 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
                     <button
                       onClick={() => handleDelete(sub.id)}
                       disabled={deletingId === sub.id}
+                      aria-label="Delete subscription"
                       className="w-10 h-10 flex items-center justify-center rounded-xl bg-danger/20 text-danger disabled:opacity-30"
                     >
                       {deletingId === sub.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
@@ -295,7 +297,7 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
 
       {subscriptions.length === 0 && !showAdd && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <span className="text-4xl mb-3">🔄</span>
+          <span className="text-4xl mb-3" aria-hidden="true">🔄</span>
           <p className="font-sans font-semibold text-lg text-muted">No subscriptions yet</p>
           <p className="font-sans text-sm text-muted mt-1">Add rent, Netflix, gym — anything recurring.</p>
         </div>

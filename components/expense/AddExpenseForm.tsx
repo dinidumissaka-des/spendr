@@ -98,9 +98,10 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
           onChange={handleAmountChange}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           placeholder="0.00"
-          className="w-full bg-transparent text-right text-6xl font-bold text-white placeholder:text-white/25 outline-none border-none"
+          aria-label="Amount"
+          className="w-full bg-transparent text-right text-6xl font-bold text-white placeholder:text-white/25 outline-none border-none focus-visible:outline-none"
         />
-        <div className="h-px w-16 bg-border mt-1" />
+        <div className="h-px w-16 bg-white/[0.1] mt-1" />
       </div>
 
       {/* Description */}

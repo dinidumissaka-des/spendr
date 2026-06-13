@@ -241,7 +241,7 @@ export default function Home() {
   }
 
   return (
-    <main className="relative z-10 min-h-screen text-text">
+    <main id="main-content" className="relative z-10 min-h-screen text-text">
       <GradualBlur target="page" position="bottom" height="5rem" strength={1.5} divCount={6} curve="bezier" zIndex={10} className="hidden sm:block" />
       <div
         className="sm:hidden fixed bottom-0 left-0 right-0 pointer-events-none"
@@ -282,6 +282,7 @@ export default function Home() {
         {/* Month row + inline calendar */}
         <button
           onClick={() => setExpandedSection(s => s === "month" ? null : "month")}
+          aria-expanded={expandedSection === "month"}
           className="w-full flex items-center justify-between px-4 py-3.5 text-sm text-white hover:bg-white/[0.07] transition-colors"
         >
           <span className="text-white/60">Month</span>
@@ -326,6 +327,7 @@ export default function Home() {
         {/* Currency row + inline list */}
         <button
           onClick={() => setExpandedSection(s => s === "currency" ? null : "currency")}
+          aria-expanded={expandedSection === "currency"}
           className="w-full flex items-center justify-between px-4 py-3.5 text-sm text-white hover:bg-white/[0.07] transition-colors"
         >
           <span className="text-white/60">Currency</span>
@@ -452,6 +454,7 @@ export default function Home() {
               </button>
               <button
                 onClick={prevMonth}
+                aria-label="Previous month"
                 className="w-8 h-8 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
               >
                 ‹
@@ -461,6 +464,7 @@ export default function Home() {
               </span>
               <button
                 onClick={nextMonth}
+                aria-label="Next month"
                 className="w-8 h-8 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
               >
                 ›
@@ -518,7 +522,7 @@ export default function Home() {
             {/* Expense list / loading / error */}
             <div key={filter} className="animate-fade-slide-in">
               {fetchError ? (
-                <div className="bg-surface rounded-xl border border-danger/40 p-5 text-center">
+                <div className="bg-white/[0.07] rounded-xl border border-danger/40 p-5 text-center">
                   <p className="text-danger font-mono text-sm">{fetchError}</p>
                   <button onClick={fetchExpenses} className="mt-3 text-xs font-mono text-muted underline hover:text-white">
                     Retry

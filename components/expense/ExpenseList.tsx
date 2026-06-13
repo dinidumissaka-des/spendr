@@ -156,7 +156,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
   if (expenses.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <span className="text-4xl mb-3">🪙</span>
+        <span className="text-4xl mb-3" aria-hidden="true">🪙</span>
         <p className="font-sans font-semibold text-lg text-muted">No expenses yet</p>
         <p className="font-sans text-sm text-muted mt-1">Add one above to get started.</p>
       </div>
@@ -234,12 +234,14 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                         <button
                           onClick={() => handleSave(expense.id)}
                           disabled={saving}
+                          aria-label="Save changes"
                           className="w-9 h-9 flex items-center justify-center rounded-lg bg-accent text-[#163300] hover:bg-accent/85 disabled:opacity-50 flex-shrink-0"
                         >
                           <Check size={15} />
                         </button>
                         <button
                           onClick={cancelEdit}
+                          aria-label="Cancel editing"
                           className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0"
                         >
                           <X size={15} />
@@ -259,6 +261,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                     <div className={`absolute right-0 top-0 bottom-0 flex items-center gap-1 px-2 sm:hidden transition-opacity duration-200 ${isSwiped ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
                       <button
                         onClick={(e) => { e.stopPropagation(); startEdit(expense); }}
+                        aria-label="Edit expense"
                         className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 text-white"
                       >
                         <Pencil size={14} />
@@ -266,6 +269,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDelete(expense.id); }}
                         disabled={deletingId === expense.id}
+                        aria-label="Delete expense"
                         className="w-10 h-10 flex items-center justify-center rounded-xl bg-danger/20 text-danger disabled:opacity-30"
                       >
                         {deletingId === expense.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}

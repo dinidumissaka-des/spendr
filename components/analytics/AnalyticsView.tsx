@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from "react";
-import { Plus, Trash2, Check, X, Pencil, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Plus, Trash2, Check, X, Pencil, TrendingUp, TrendingDown, Minus, Loader2 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import type { Expense, Subscription, Income, NewIncome } from "@/types";
 import { getExpensesByMonth, getIncomeByMonth, addIncome, deleteIncome, upsertUserSettings } from "@/lib/supabase";
@@ -330,8 +330,11 @@ const IncomeSection = memo(function IncomeSection({
   const [newDate, setNewDate] = useState(todayISO());
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [swipedIncomeId, setSwipedIncomeId] = useState<string | null>(null);
   const baselineRef = useRef<HTMLInputElement>(null);
   const amountRef = useRef<HTMLInputElement>(null);
+  const incomeTouchStartX = useRef(0);
+  const incomeTouchStartY = useRef(0);
 
   useEffect(() => {
     if (editingBaseline) setTimeout(() => baselineRef.current?.focus(), 50);
@@ -340,6 +343,23 @@ const IncomeSection = memo(function IncomeSection({
   useEffect(() => {
     if (showAddForm) setTimeout(() => amountRef.current?.focus(), 50);
   }, [showAddForm]);
+
+  function handleIncomeTouchStart(e: React.TouchEvent) {
+    incomeTouchStartX.current = e.touches[0].clientX;
+    incomeTouchStartY.current = e.touches[0].clientY;
+  }
+
+  function handleIncomeTouchEnd(e: React.TouchEvent, entryId: string) {
+    const deltaX = incomeTouchStartX.current - e.changedTouches[0].clientX;
+    const deltaY = Math.abs(incomeTouchStartY.current - e.changedTouches[0].clientY);
+    if (deltaY > 40) return;
+    if (deltaX > 50) {
+      if ("vibrate" in navigator) navigator.vibrate(18);
+      setSwipedIncomeId(entryId);
+    } else if (deltaX < -20) {
+      setSwipedIncomeId(null);
+    }
+  }
 
   const fetchEntries = useCallback(async () => {
     setLoadingEntries(true);
@@ -469,10 +489,10 @@ const IncomeSection = memo(function IncomeSection({
               placeholder="Monthly income"
               className="flex-1 bg-transparent text-white text-base outline-none placeholder:text-muted [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
-            <button onClick={saveBaseline} className="w-7 h-7 flex items-center justify-center rounded-lg bg-accent text-[#163300] flex-shrink-0">
+            <button onClick={saveBaseline} aria-label="Save income" className="w-7 h-7 flex items-center justify-center rounded-lg bg-accent text-[#163300] flex-shrink-0">
               <Check size={13} />
             </button>
-            <button onClick={() => setEditingBaseline(false)} className="w-7 h-7 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0">
+            <button onClick={() => setEditingBaseline(false)} aria-label="Cancel" className="w-7 h-7 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0">
               <X size={13} />
             </button>
           </div>
@@ -484,7 +504,7 @@ const IncomeSection = memo(function IncomeSection({
                 {formatAmount(monthlyIncome, currency)} <span className="text-muted text-xs font-normal">{currency}/mo</span>
               </span>
             </div>
-            <button onClick={openBaselineEdit} className="text-muted hover:text-white transition-colors">
+            <button onClick={openBaselineEdit} aria-label="Edit monthly income" className="text-muted hover:text-white transition-colors">
               <Pencil size={12} />
             </button>
           </div>
@@ -505,6 +525,8 @@ const IncomeSection = memo(function IncomeSection({
             <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold">One-off Income</span>
             <button
               onClick={() => setShowAddForm((v) => !v)}
+              aria-label="Add income entry"
+              aria-expanded={showAddForm}
               className="w-6 h-6 flex items-center justify-center rounded-full bg-accent text-[#163300]"
             >
               <Plus size={12} />
@@ -544,12 +566,14 @@ const IncomeSection = memo(function IncomeSection({
                 <button
                   onClick={handleAddEntry}
                   disabled={saving}
+                  aria-label="Save income entry"
                   className="w-9 h-9 flex items-center justify-center rounded-lg bg-accent text-[#163300] disabled:opacity-50 flex-shrink-0"
                 >
                   <Check size={15} />
                 </button>
                 <button
                   onClick={() => setShowAddForm(false)}
+                  aria-label="Cancel"
                   className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0"
                 >
                   <X size={15} />
@@ -569,24 +593,52 @@ const IncomeSection = memo(function IncomeSection({
             </div>
           ) : (
             <div className="divide-y divide-white/[0.07]">
-              {incomeEntries.map((entry) => (
-                <div key={entry.id} className="flex items-center gap-3 px-4 py-3 group">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-sans text-sm text-white truncate">{entry.source}</p>
-                    <p className="font-mono text-xs text-muted">{entry.date}</p>
-                  </div>
-                  <span className="font-mono text-sm text-accent font-semibold flex-shrink-0">
-                    +{formatAmount(Number(entry.amount), currency)}
-                  </span>
-                  <button
-                    onClick={() => handleDeleteEntry(entry.id)}
-                    disabled={deletingId === entry.id}
-                    className="w-6 h-6 flex items-center justify-center rounded-md text-muted hover:text-danger opacity-0 group-hover:opacity-100 sm:flex hidden transition-all disabled:opacity-30 flex-shrink-0"
+              {incomeEntries.map((entry) => {
+                const isSwiped = swipedIncomeId === entry.id;
+                return (
+                  <div
+                    key={entry.id}
+                    className="relative overflow-hidden group"
+                    onTouchStart={handleIncomeTouchStart}
+                    onTouchEnd={(e) => handleIncomeTouchEnd(e, entry.id)}
+                    onClick={() => { if (isSwiped) setSwipedIncomeId(null); }}
                   >
-                    <Trash2 size={12} />
-                  </button>
-                </div>
-              ))}
+                    {/* Swipe reveal — mobile only */}
+                    <div className={`absolute right-0 top-0 bottom-0 flex items-center px-2 sm:hidden transition-opacity duration-200 ${isSwiped ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteEntry(entry.id); }}
+                        disabled={deletingId === entry.id}
+                        aria-label="Delete income entry"
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-danger/20 text-danger disabled:opacity-30"
+                      >
+                        {deletingId === entry.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                      </button>
+                    </div>
+                    {/* Row */}
+                    <div
+                      className="flex items-center gap-3 px-4 py-3 transition-all duration-200"
+                      style={{ transform: isSwiped ? "translateX(-56px)" : "translateX(0)" }}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-sans text-sm text-white truncate">{entry.source}</p>
+                        <p className="font-mono text-xs text-muted">{entry.date}</p>
+                      </div>
+                      <span className="font-mono text-sm text-accent font-semibold flex-shrink-0">
+                        +{formatAmount(Number(entry.amount), currency)}
+                      </span>
+                      {/* Desktop hover delete */}
+                      <button
+                        onClick={() => handleDeleteEntry(entry.id)}
+                        disabled={deletingId === entry.id}
+                        aria-label="Delete income entry"
+                        className="w-6 h-6 flex items-center justify-center rounded-md text-muted hover:text-danger opacity-0 group-hover:opacity-100 sm:flex hidden transition-all disabled:opacity-30 flex-shrink-0"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
               {entriesTotal > 0 && (
                 <div className="flex items-center justify-between px-4 py-2.5 bg-white/[0.03]">
                   <span className="font-sans text-xs text-muted">One-off total</span>
