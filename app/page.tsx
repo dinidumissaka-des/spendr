@@ -394,25 +394,30 @@ export default function Home() {
             { key: "expenses", label: "Expenses", icon: CreditCard },
             { key: "subscriptions", label: "Subscriptions", icon: RefreshCw },
             { key: "income", label: "Income", icon: Wallet },
-          ] as { key: View; label: string; icon: React.ElementType }[]).map(({ key, label, icon: Icon }) => (
-            <button
-              key={key}
-              onClick={() => setView(key)}
-              className={`flex-1 h-full flex flex-col items-center justify-center gap-1 rounded-full text-xs font-mono transition-colors ${
-                view === key
-                  ? "bg-white/15 text-white border border-white/15"
-                  : "text-white/35 hover:text-white/70"
-              }`}
-            >
-              <Icon size={18} strokeWidth={1.8} />
-              <span>{label}</span>
-            </button>
-          ))}
+          ] as { key: View; label: string; icon: React.ElementType }[]).map(({ key, label, icon: Icon }) => {
+            const active = view === key;
+            return (
+              <button
+                key={key}
+                onClick={() => setView(key)}
+                className={`flex-1 h-full flex flex-col items-center justify-center gap-1 rounded-full text-xs font-mono transition-all ${
+                  active
+                    ? "bg-white/15 text-white border border-white/15"
+                    : "text-white/35 hover:text-white/70"
+                }`}
+              >
+                <span className={active ? "[&>svg>*]:fill-current [&>svg>*]:stroke-none" : ""}>
+                  <Icon size={22} strokeWidth={active ? 0 : 1.8} />
+                </span>
+                <span>{label}</span>
+              </button>
+            );
+          })}
           <button
             onClick={() => router.push("/insights")}
             className="flex-1 h-full flex flex-col items-center justify-center gap-1 rounded-full text-xs font-mono transition-colors text-white/35 hover:text-white/70"
           >
-            <Lightbulb size={18} strokeWidth={1.8} />
+            <Lightbulb size={22} strokeWidth={1.8} />
             <span>Insights</span>
           </button>
         </div>
