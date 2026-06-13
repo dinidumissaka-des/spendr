@@ -127,9 +127,6 @@ export default function InsightsPage() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-1 px-1">
-          <h1 className="font-sans text-xl font-semibold text-white">Insights</h1>
-        </div>
 
         <AnalyticsView
           expenses={expenses}

@@ -266,9 +266,6 @@ const InsightCards = memo(function InsightCards({
 
   return (
     <div className="flex flex-col gap-3">
-      <span className="px-1 font-sans text-xs text-muted uppercase tracking-wider font-semibold">
-        Insights
-      </span>
       <div ref={gridRef} className="grid grid-cols-2 gap-3">
         {insights.map((insight) => (
           <GlassSurface
