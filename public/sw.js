@@ -1,4 +1,4 @@
-const CACHE = "minti-v2";
+const CACHE = "minti-v3";
 
 self.addEventListener("install", () => self.skipWaiting());
 

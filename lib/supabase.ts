@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
-import type { Expense, NewExpense, Subscription, NewSubscription } from '@/types';
+import type { Expense, NewExpense, Subscription, NewSubscription, Income, NewIncome } from '@/types';
 
 let _client: SupabaseClient | null = null;
 
@@ -112,15 +112,15 @@ export async function updateSubscription(id: string, data: Partial<NewSubscripti
   if (error) throw error;
 }
 
-export async function getUserSettings(): Promise<{ budget: number | null; currency: string } | null> {
+export async function getUserSettings(): Promise<{ budget: number | null; currency: string; monthly_income: number | null } | null> {
   const { data } = await getClient()
     .from('user_settings')
-    .select('budget, currency')
+    .select('budget, currency, monthly_income')
     .maybeSingle();
   return data ?? null;
 }
 
-export async function upsertUserSettings(settings: { budget?: number | null; currency?: string }): Promise<void> {
+export async function upsertUserSettings(settings: { budget?: number | null; currency?: string; monthly_income?: number | null }): Promise<void> {
   const { data: { user } } = await getClient().auth.getUser();
   if (!user) return;
   await getClient()
@@ -129,4 +129,38 @@ export async function upsertUserSettings(settings: { budget?: number | null; cur
       { user_id: user.id, ...settings, updated_at: new Date().toISOString() },
       { onConflict: 'user_id' }
     );
+}
+
+export async function getIncomeByMonth(year: number, month: number): Promise<Income[]> {
+  const from = `${year}-${String(month).padStart(2, '0')}-01`;
+  const lastDay = new Date(year, month, 0).getDate();
+  const to = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+  const { data, error } = await getClient()
+    .from('income_entries')
+    .select('*')
+    .gte('date', from)
+    .lte('date', to)
+    .order('date', { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function addIncome(data: NewIncome, userId: string): Promise<Income> {
+  const { data: inserted, error } = await getClient()
+    .from('income_entries')
+    .insert([{ ...data, user_id: userId }])
+    .select()
+    .single();
+  if (error) throw error;
+  return inserted;
+}
+
+export async function deleteIncome(id: string): Promise<void> {
+  const { error } = await getClient().from('income_entries').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function updateIncome(id: string, data: Partial<NewIncome>): Promise<void> {
+  const { error } = await getClient().from('income_entries').update(data).eq('id', id);
+  if (error) throw error;
 }

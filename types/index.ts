@@ -20,3 +20,13 @@ export type Subscription = {
 };
 
 export type NewSubscription = Omit<Subscription, 'id' | 'created_at'>;
+
+export type Income = {
+  id: string;
+  source: string;
+  amount: number;
+  date: string; // YYYY-MM-DD
+  created_at: string;
+};
+
+export type NewIncome = Omit<Income, 'id' | 'created_at'>;

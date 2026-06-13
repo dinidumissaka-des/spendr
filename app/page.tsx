@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { LogOut, ChevronDown, Download, MoreHorizontal, CreditCard, RefreshCw } from "lucide-react";
+import { LogOut, ChevronDown, Download, MoreHorizontal, CreditCard, RefreshCw, BarChart2 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { getExpensesByMonth, getSubscriptions, onAuthStateChange, signOut, getUserSettings, upsertUserSettings } from "@/lib/supabase";
 import type { Expense, Subscription } from "@/types";
@@ -18,10 +18,11 @@ import StatsBar from "@/components/StatsBar";
 import BudgetBar from "@/components/BudgetBar";
 import ExpenseList from "@/components/expense/ExpenseList";
 import SubscriptionList from "@/components/subscription/SubscriptionList";
+import AnalyticsView from "@/components/analytics/AnalyticsView";
 import BottomDrawer from "@/components/BottomDrawer";
 
 type Filter = "all" | "today" | "week";
-type View = "expenses" | "subscriptions";
+type View = "expenses" | "subscriptions" | "analytics";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -54,6 +55,7 @@ export default function Home() {
   const [view, setView] = useState<View>("expenses");
   const [currency, setCurrency] = useState<string>(DEFAULT_CURRENCY);
   const [budget, setBudget] = useState<number | null>(null);
+  const [monthlyIncome, setMonthlyIncome] = useState<number | null>(null);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [showMoreDrawer, setShowMoreDrawer] = useState(false);
   const [expandedSection, setExpandedSection] = useState<"month" | "currency" | null>(null);
@@ -75,6 +77,8 @@ export default function Home() {
     if (c) setCurrency(c);
     const b = localStorage.getItem("minti_budget");
     if (b) setBudget(parseFloat(b));
+    const mi = localStorage.getItem("minti_monthly_income");
+    if (mi) setMonthlyIncome(parseFloat(mi));
   }, []);
 
   // Sync settings from DB once user is known, migrate localStorage if first time
@@ -86,12 +90,16 @@ export default function Home() {
         localStorage.setItem("minti_currency", settings.currency);
         setBudget(settings.budget ?? null);
         if (settings.budget != null) localStorage.setItem("minti_budget", String(settings.budget));
+        setMonthlyIncome(settings.monthly_income ?? null);
+        if (settings.monthly_income != null) localStorage.setItem("minti_monthly_income", String(settings.monthly_income));
       } else {
         const c = localStorage.getItem("minti_currency");
         const b = localStorage.getItem("minti_budget");
-        const toSave: { currency?: string; budget?: number } = {};
+        const mi = localStorage.getItem("minti_monthly_income");
+        const toSave: { currency?: string; budget?: number; monthly_income?: number } = {};
         if (c) toSave.currency = c;
         if (b) toSave.budget = parseFloat(b);
+        if (mi) toSave.monthly_income = parseFloat(mi);
         if (Object.keys(toSave).length > 0) upsertUserSettings(toSave).catch(() => {});
       }
     }).catch(() => {});
@@ -108,6 +116,15 @@ export default function Home() {
     setBudget(value);
     localStorage.setItem("minti_budget", String(value));
     upsertUserSettings({ budget: value }).catch(() => {});
+  }, []);
+
+  const saveMonthlyIncome = useCallback((value: number | null) => {
+    setMonthlyIncome(value);
+    if (value != null) {
+      localStorage.setItem("minti_monthly_income", String(value));
+    } else {
+      localStorage.removeItem("minti_monthly_income");
+    }
   }, []);
 
   // Close picker on outside click
@@ -363,6 +380,7 @@ export default function Home() {
           {([
             { key: "expenses", label: "Expenses", icon: CreditCard },
             { key: "subscriptions", label: "Subscriptions", icon: RefreshCw },
+            { key: "analytics", label: "Analytics", icon: BarChart2 },
           ] as { key: View; label: string; icon: React.ElementType }[]).map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -451,7 +469,7 @@ export default function Home() {
           </div>
           {/* Row 3: View toggle (full width) — desktop only */}
           <div className="hidden sm:flex items-center h-10 p-0.5 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md w-full">
-            {(["expenses", "subscriptions"] as View[]).map((v) => (
+            {(["expenses", "subscriptions", "analytics"] as View[]).map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
@@ -461,7 +479,7 @@ export default function Home() {
                     : "text-white/40 hover:text-white/80"
                 }`}
               >
-                {v === "expenses" ? "Expenses" : "Subscriptions"}
+                {v === "expenses" ? "Expenses" : v === "subscriptions" ? "Subscriptions" : "Analytics"}
               </button>
             ))}
           </div>
@@ -518,7 +536,7 @@ export default function Home() {
               )}
             </div>
           </>
-        ) : (
+        ) : view === "subscriptions" ? (
           <>
             <BudgetBar spent={expensesTotal + subscriptionsTotal} currency={currency} budget={budget} onBudgetSave={saveBudget} />
             <SubscriptionList
@@ -528,6 +546,16 @@ export default function Home() {
               onChanged={fetchSubscriptions}
             />
           </>
+        ) : (
+          <AnalyticsView
+            user={user}
+            expenses={expenses}
+            subscriptions={subscriptions}
+            selectedMonth={selectedMonth}
+            currency={currency}
+            monthlyIncome={monthlyIncome}
+            onMonthlyIncomeChange={saveMonthlyIncome}
+          />
         )}
       </div>
     </main>
