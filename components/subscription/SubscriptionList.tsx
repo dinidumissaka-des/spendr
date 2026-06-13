@@ -124,7 +124,7 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
                   <div key={sub.id} className="px-4 py-3 flex flex-col gap-3">
                     <div className="flex gap-2">
                       <input
-                        className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-9 text-base text-white placeholder:text-muted outline-none focus:border-white/30"
+                        className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-base text-white placeholder:text-muted outline-none focus:border-white/30"
                         value={editState.name}
                         onChange={(e) => setEditState({ ...editState, name: e.target.value })}
                         placeholder="Name"
@@ -132,7 +132,7 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
                       />
                       <input
                         type="number"
-                        className="w-28 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-9 text-base text-white outline-none focus:border-white/30 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        className="w-28 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-base text-white outline-none focus:border-white/30 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         value={editState.amount}
                         onChange={(e) => setEditState({ ...editState, amount: e.target.value })}
                         placeholder="Amount"
@@ -143,16 +143,16 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
                       <button
                         type="button"
                         onClick={() => setEditCategoryPicker(sub.id)}
-                        className="flex-1 h-9 flex items-center px-3 rounded-lg border border-white/[0.1] bg-white/[0.07] text-sm text-white text-left"
+                        className="flex-1 h-11 flex items-center px-3 rounded-lg border border-white/[0.1] bg-white/[0.07] text-[15px] text-white text-left"
                       >
                         {editState.category}
                       </button>
                       <button onClick={() => handleSave(sub.id)} disabled={saving} aria-label="Save changes"
-                        className="w-9 h-9 flex items-center justify-center rounded-lg bg-accent text-[#163300] hover:bg-accent/85 disabled:opacity-50 flex-shrink-0">
+                        className="w-11 h-11 flex items-center justify-center rounded-lg bg-accent text-[#163300] hover:bg-accent/85 disabled:opacity-50 flex-shrink-0">
                         <Check size={15} />
                       </button>
                       <button onClick={() => { setEditingId(null); setEditState(null); }} aria-label="Cancel editing"
-                        className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0">
+                        className="w-11 h-11 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0">
                         <X size={15} />
                       </button>
                     </div>
@@ -199,11 +199,11 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
 
                   {/* Row content */}
                   <div
-                    className="flex items-center gap-3 px-4 py-3.5 sm:hover:bg-white/5 transition-all duration-200"
+                    className="flex items-center gap-3 px-4 py-4 sm:hover:bg-white/5 transition-all duration-200"
                     style={{ transform: isSwiped ? "translateX(-88px)" : "translateX(0)" }}
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm font-sans truncate">{sub.name}</p>
+                      <p className="text-white text-[15px] font-sans truncate">{sub.name}</p>
                       <span className="inline-block mt-0.5 text-xs font-mono px-1.5 py-0.5 rounded-full bg-white/[0.07] text-white/40">
                         {sub.category}
                       </span>

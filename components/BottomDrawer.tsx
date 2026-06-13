@@ -42,7 +42,7 @@ export default function BottomDrawer({ open, onClose, title, children, contentCl
             <button
               onClick={onClose}
               aria-label="Close"
-              className="w-7 h-7 flex items-center justify-center rounded-full bg-white/[0.07] border border-white/[0.1] text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/[0.07] border border-white/[0.1] text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
             >
               <X size={13} />
             </button>

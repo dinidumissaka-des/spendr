@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo, memo } from "react";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { useState, useEffect, useRef, useMemo, memo } from "react";
+import { TrendingUp, TrendingDown, Minus, PieChart, Calendar, RefreshCw } from "lucide-react";
 import type { Expense, Subscription } from "@/types";
 import { getExpensesByMonth } from "@/lib/supabase";
 import { formatAmount } from "@/lib/currencies";
@@ -75,8 +75,8 @@ const CategoryChart = memo(function CategoryChart({
   if (stats.length === 0) {
     return (
       <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
-        <div className="px-5 py-8 text-center w-full">
-          <p className="text-muted text-sm font-mono">No spending data yet</p>
+        <div className="px-6 py-10 text-center w-full">
+          <p className="text-muted text-[15px] font-mono">No spending data yet</p>
         </div>
       </GlassSurface>
     );
@@ -84,27 +84,27 @@ const CategoryChart = memo(function CategoryChart({
 
   return (
     <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
-      <div className="px-5 py-4 flex flex-col gap-3 w-full">
+      <div className="px-5 py-5 flex flex-col gap-4 w-full">
         <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold">
           Spending by Category
         </span>
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-4">
           {stats.map(({ category, amount, pct, color }) => (
-            <div key={category} className="flex flex-col gap-1">
+            <div key={category} className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <span
-                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                     style={{ backgroundColor: color }}
                   />
-                  <span className="font-sans text-xs text-white/70">{category}</span>
+                  <span className="font-sans text-[15px] text-white/80">{category}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-muted">{pct.toFixed(0)}%</span>
-                  <span className="font-mono text-xs text-white">{formatAmount(amount, currency)}</span>
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-sm text-muted">{pct.toFixed(0)}%</span>
+                  <span className="font-mono text-[15px] text-white font-medium">{formatAmount(amount, currency)}</span>
                 </div>
               </div>
-              <div className="h-1 w-full bg-white/[0.06] rounded-full overflow-hidden">
+              <div className="h-2 w-full bg-white/[0.06] rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-700"
                   style={{ width: `${pct}%`, backgroundColor: color }}
@@ -154,6 +154,7 @@ function buildInsights(
       text: `${top.category} is your biggest spend`,
       sub: `${top.pct.toFixed(0)}% of total — ${formatAmount(top.amount, currency)} ${currency}`,
       type: "neutral",
+      icon: <PieChart size={16} className="text-white/40" />,
     });
   }
 
@@ -167,6 +168,9 @@ function buildInsights(
       text: `On track to spend ${formatAmount(projected, currency)} ${currency} this month`,
       sub: `Avg ${formatAmount(avgDay, currency)} ${currency}/day over ${elapsed} days`,
       type: projected > (budget ?? Infinity) ? "warning" : "neutral",
+      icon: projected > (budget ?? Infinity)
+        ? <TrendingUp size={16} className="text-danger" />
+        : <Calendar size={16} className="text-white/40" />,
     });
   }
 
@@ -179,7 +183,7 @@ function buildInsights(
         text: `You've saved ${formatAmount(saved, currency)} ${currency} this month`,
         sub: `${rate.toFixed(0)}% savings rate`,
         type: "positive",
-        icon: <TrendingUp size={13} className="text-accent" />,
+        icon: <TrendingUp size={16} className="text-accent" />,
       });
     } else {
       insights.push({
@@ -187,7 +191,7 @@ function buildInsights(
         text: `You're ${formatAmount(Math.abs(saved), currency)} ${currency} over your income`,
         sub: `Spending exceeds income by ${Math.abs(rate).toFixed(0)}%`,
         type: "warning",
-        icon: <TrendingDown size={13} className="text-danger" />,
+        icon: <TrendingDown size={16} className="text-danger" />,
       });
     }
   }
@@ -207,8 +211,8 @@ function buildInsights(
         sub: `${formatAmount(prev, currency)} → ${formatAmount(curr, currency)} ${currency}`,
         type: pctChange > 15 ? "warning" : pctChange < -10 ? "positive" : "neutral",
         icon: pctChange > 0
-          ? <TrendingUp size={13} className="text-danger" />
-          : <TrendingDown size={13} className="text-accent" />,
+          ? <TrendingUp size={16} className="text-danger" />
+          : <TrendingDown size={16} className="text-accent" />,
       });
     }
   }
@@ -219,7 +223,7 @@ function buildInsights(
       text: `${subscriptions.length} active subscription${subscriptions.length > 1 ? "s" : ""}`,
       sub: `${formatAmount(subTotal, currency)} ${currency}/month fixed cost`,
       type: "neutral",
-      icon: <Minus size={13} className="text-muted" />,
+      icon: <RefreshCw size={16} className="text-muted" />,
     });
   }
 
@@ -248,35 +252,46 @@ const InsightCards = memo(function InsightCards({
     [expenses, subscriptions, prevExpenses, selectedMonth, currency, monthlyIncome, budget],
   );
 
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [cardMinH, setCardMinH] = useState(0);
+
+  useEffect(() => {
+    if (!gridRef.current) return;
+    const items = Array.from(gridRef.current.children) as HTMLElement[];
+    const max = Math.max(...items.map((el) => el.getBoundingClientRect().height));
+    if (max > 0) setCardMinH(max);
+  }, [insights]);
+
   if (insights.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       <span className="px-1 font-sans text-xs text-muted uppercase tracking-wider font-semibold">
         Insights
       </span>
-      <div className="flex flex-col gap-2">
+      <div ref={gridRef} className="grid grid-cols-2 gap-3">
         {insights.map((insight) => (
           <GlassSurface
             key={insight.id}
             borderRadius={20}
             backgroundOpacity={0.07}
-            style={
-              insight.type === "positive"
+            style={{
+              minHeight: cardMinH || undefined,
+              ...(insight.type === "positive"
                 ? { borderColor: "rgba(159,232,112,0.2)" }
                 : insight.type === "warning"
                 ? { borderColor: "rgba(224,92,92,0.2)" }
-                : undefined
-            }
+                : {}),
+            }}
           >
-            <div className="px-4 py-3 flex items-start gap-3 w-full">
+            <div className="px-4 py-4 flex flex-col gap-2 w-full h-full">
               {insight.icon && (
-                <span className="mt-0.5 flex-shrink-0">{insight.icon}</span>
+                <span className="flex-shrink-0">{insight.icon}</span>
               )}
-              <div className="flex flex-col gap-0.5 min-w-0">
-                <p className="font-sans text-sm text-white leading-snug">{insight.text}</p>
+              <div className="flex flex-col gap-1 min-w-0">
+                <p className="font-sans text-[15px] text-white leading-snug">{insight.text}</p>
                 {insight.sub && (
-                  <p className="font-mono text-xs text-muted">{insight.sub}</p>
+                  <p className="font-mono text-xs text-muted leading-relaxed">{insight.sub}</p>
                 )}
               </div>
             </div>
@@ -338,28 +353,28 @@ const MomComparison = memo(function MomComparison({
 
   return (
     <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
-      <div className="px-5 py-4 flex flex-col gap-3 w-full">
+      <div className="px-5 py-5 flex flex-col gap-4 w-full">
         <div className="flex items-center justify-between">
           <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold">
             vs Last Month
           </span>
-          <span className="font-mono text-xs text-muted">{prevLabel}</span>
+          <span className="font-mono text-sm text-muted">{prevLabel}</span>
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           {categories.map(({ cat, curr, prev, color }) => {
             const pctChange = prev > 0 ? ((curr - prev) / prev) * 100 : null;
             const isUp = curr > prev;
             return (
               <div key={cat} className="flex items-center gap-3">
-                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-                <span className="font-sans text-xs text-white/70 flex-1 truncate">{cat}</span>
-                <span className="font-mono text-xs text-white flex-shrink-0">{formatAmount(curr, currency)}</span>
+                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                <span className="font-sans text-[15px] text-white/80 flex-1 truncate">{cat}</span>
+                <span className="font-mono text-[15px] text-white flex-shrink-0">{formatAmount(curr, currency)}</span>
                 {pctChange !== null ? (
-                  <span className={`font-mono text-xs flex-shrink-0 w-14 text-right ${isUp ? "text-danger" : "text-accent"}`}>
+                  <span className={`font-mono text-sm font-semibold flex-shrink-0 w-16 text-right ${isUp ? "text-danger" : "text-accent"}`}>
                     {isUp ? "+" : ""}{pctChange.toFixed(0)}%
                   </span>
                 ) : (
-                  <span className="font-mono text-xs text-muted flex-shrink-0 w-14 text-right">new</span>
+                  <span className="font-mono text-sm text-muted flex-shrink-0 w-16 text-right">new</span>
                 )}
               </div>
             );
@@ -370,7 +385,15 @@ const MomComparison = memo(function MomComparison({
   );
 });
 
-// ─── Main InsightsView ────────────────────────────────────────────────────────
+// ─── Main AnalyticsView ───────────────────────────────────────────────────────
+
+type Tab = "insights" | "spending" | "vs-last";
+
+const TABS: { key: Tab; label: string }[] = [
+  { key: "insights",  label: "Insights" },
+  { key: "spending",  label: "By Category" },
+  { key: "vs-last",   label: "vs Last Month" },
+];
 
 export default function AnalyticsView({
   expenses,
@@ -381,6 +404,7 @@ export default function AnalyticsView({
 }: Props) {
   const [prevExpenses, setPrevExpenses] = useState<Expense[]>([]);
   const [budget, setBudget] = useState<number | null>(null);
+  const [tab, setTab] = useState<Tab>("insights");
 
   useEffect(() => {
     const { year, month } = prevMonthOf(selectedMonth.year, selectedMonth.month);
@@ -395,26 +419,49 @@ export default function AnalyticsView({
   }, []);
 
   return (
-    <div className="flex flex-col gap-4">
-      <InsightCards
-        expenses={expenses}
-        subscriptions={subscriptions}
-        prevExpenses={prevExpenses}
-        selectedMonth={selectedMonth}
-        currency={currency}
-        monthlyIncome={monthlyIncome}
-        budget={budget}
-      />
+    <div className="flex flex-col gap-5">
+      {/* Tab bar */}
+      <div className="flex gap-2">
+        {TABS.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={`flex-1 h-10 rounded-full text-sm font-semibold transition-colors ${
+              tab === key
+                ? "bg-white/10 backdrop-blur-md text-white border border-white/15"
+                : "text-muted hover:text-white"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-      <CategoryChart expenses={expenses} subscriptions={subscriptions} currency={currency} />
+      {tab === "insights" && (
+        <InsightCards
+          expenses={expenses}
+          subscriptions={subscriptions}
+          prevExpenses={prevExpenses}
+          selectedMonth={selectedMonth}
+          currency={currency}
+          monthlyIncome={monthlyIncome}
+          budget={budget}
+        />
+      )}
 
-      <MomComparison
-        expenses={expenses}
-        prevExpenses={prevExpenses}
-        subscriptions={subscriptions}
-        currency={currency}
-        selectedMonth={selectedMonth}
-      />
+      {tab === "spending" && (
+        <CategoryChart expenses={expenses} subscriptions={subscriptions} currency={currency} />
+      )}
+
+      {tab === "vs-last" && (
+        <MomComparison
+          expenses={expenses}
+          prevExpenses={prevExpenses}
+          subscriptions={subscriptions}
+          currency={currency}
+          selectedMonth={selectedMonth}
+        />
+      )}
     </div>
   );
 }

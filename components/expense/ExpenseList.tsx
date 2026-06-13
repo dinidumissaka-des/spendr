@@ -199,7 +199,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                     <div key={expense.id} className="px-4 py-3 flex flex-col gap-3 bg-white/[0.03]">
                       <div className="flex gap-2">
                         <input
-                          className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-9 text-base text-white placeholder:text-muted outline-none focus:border-white/30"
+                          className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-base text-white placeholder:text-muted outline-none focus:border-white/30"
                           value={editState.description}
                           onChange={(e) => setEditState({ ...editState, description: e.target.value })}
                           placeholder="Description"
@@ -207,7 +207,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                         />
                         <input
                           type="number"
-                          className="w-28 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-9 text-base text-white outline-none focus:border-white/30 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                          className="w-28 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-base text-white outline-none focus:border-white/30 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                           value={editState.amount}
                           onChange={(e) => setEditState({ ...editState, amount: e.target.value })}
                           placeholder="Amount"
@@ -216,7 +216,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                         />
                       </div>
                       <select
-                        className="w-full bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-9 text-sm text-white outline-none focus:border-white/30 appearance-none cursor-pointer"
+                        className="w-full bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-[15px] text-white outline-none focus:border-white/30 appearance-none cursor-pointer"
                         value={editState.category}
                         onChange={(e) => setEditState({ ...editState, category: e.target.value })}
                       >
@@ -227,7 +227,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                       <div className="flex gap-2">
                         <input
                           type="date"
-                          className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-9 text-sm text-white outline-none focus:border-white/30 [color-scheme:dark]"
+                          className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-[15px] text-white outline-none focus:border-white/30 [color-scheme:dark]"
                           value={editState.date}
                           onChange={(e) => setEditState({ ...editState, date: e.target.value })}
                         />
@@ -235,14 +235,14 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                           onClick={() => handleSave(expense.id)}
                           disabled={saving}
                           aria-label="Save changes"
-                          className="w-9 h-9 flex items-center justify-center rounded-lg bg-accent text-[#163300] hover:bg-accent/85 disabled:opacity-50 flex-shrink-0"
+                          className="w-11 h-11 flex items-center justify-center rounded-lg bg-accent text-[#163300] hover:bg-accent/85 disabled:opacity-50 flex-shrink-0"
                         >
                           <Check size={15} />
                         </button>
                         <button
                           onClick={cancelEdit}
                           aria-label="Cancel editing"
-                          className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0"
+                          className="w-11 h-11 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0"
                         >
                           <X size={15} />
                         </button>
@@ -283,10 +283,10 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                       onTouchMove={(e) => onTouchMove(e, expense.id)}
                       onTouchEnd={() => onTouchEnd(expense.id)}
                       onTouchCancel={() => snapBack(expense.id)}
-                      className="group relative flex items-center gap-3 px-4 py-3.5 sm:hover:bg-white/5 transition-colors"
+                      className="group relative flex items-center gap-3 px-4 py-4 sm:hover:bg-white/5 transition-colors"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-text text-sm font-sans truncate">{expense.description}</p>
+                        <p className="text-text text-[15px] font-sans truncate">{expense.description}</p>
                         <span className="inline-block mt-0.5 text-xs font-mono px-1.5 py-0.5 rounded-full bg-white/[0.07] text-white/40">
                           {expense.category}
                         </span>

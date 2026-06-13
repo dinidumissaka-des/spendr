@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { LogOut, ChevronDown, Download, MoreHorizontal, CreditCard, RefreshCw, Lightbulb } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { LogOut, ChevronDown, Download, MoreHorizontal, CreditCard, RefreshCw, Wallet, Lightbulb } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { getExpensesByMonth, getSubscriptions, onAuthStateChange, signOut, getUserSettings, upsertUserSettings } from "@/lib/supabase";
 import type { Expense, Subscription } from "@/types";
@@ -18,12 +19,11 @@ import StatsBar from "@/components/StatsBar";
 import BudgetBar from "@/components/BudgetBar";
 import ExpenseList from "@/components/expense/ExpenseList";
 import SubscriptionList from "@/components/subscription/SubscriptionList";
-import AnalyticsView from "@/components/analytics/AnalyticsView";
 import IncomeSection from "@/components/analytics/IncomeSection";
 import BottomDrawer from "@/components/BottomDrawer";
 
 type Filter = "all" | "today" | "week";
-type View = "expenses" | "subscriptions" | "insights";
+type View = "expenses" | "subscriptions" | "income";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -43,6 +43,7 @@ function todayISO() {
 
 export default function Home() {
   const now = new Date();
+  const router = useRouter();
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const [selectedMonth, setSelectedMonth] = useState({
     year: now.getFullYear(),
@@ -262,7 +263,7 @@ export default function Home() {
           <button
             key={c.code}
             onClick={() => selectCurrency(c.code)}
-            className={`w-full flex items-center justify-between px-4 py-3.5 text-sm transition-colors border-b border-white/10 last:border-0 ${
+            className={`w-full flex items-center justify-between px-4 py-4 text-sm transition-colors border-b border-white/10 last:border-0 ${
               currency === c.code
                 ? "text-accent bg-accent/10"
                 : "text-white hover:bg-white/[0.07]"
@@ -284,7 +285,7 @@ export default function Home() {
         <button
           onClick={() => setExpandedSection(s => s === "month" ? null : "month")}
           aria-expanded={expandedSection === "month"}
-          className="w-full flex items-center justify-between px-4 py-3.5 text-sm text-white hover:bg-white/[0.07] transition-colors"
+          className="w-full flex items-center justify-between px-4 py-4 text-[15px] text-white hover:bg-white/[0.07] transition-colors"
         >
           <span className="text-white/60">Month</span>
           <div className="flex items-center gap-2">
@@ -297,12 +298,12 @@ export default function Home() {
             <div className="flex items-center justify-between mb-3">
               <button
                 onClick={() => setPickerYear(y => y - 1)}
-                className="w-8 h-8 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] text-white/40 hover:text-white/90 transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] text-white/40 hover:text-white/90 transition-colors"
               >‹</button>
               <span className="font-mono text-sm font-semibold text-white">{pickerYear}</span>
               <button
                 onClick={() => setPickerYear(y => y + 1)}
-                className="w-8 h-8 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] text-white/40 hover:text-white/90 transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] text-white/40 hover:text-white/90 transition-colors"
               >›</button>
             </div>
             <div className="grid grid-cols-4 gap-2">
@@ -329,7 +330,7 @@ export default function Home() {
         <button
           onClick={() => setExpandedSection(s => s === "currency" ? null : "currency")}
           aria-expanded={expandedSection === "currency"}
-          className="w-full flex items-center justify-between px-4 py-3.5 text-sm text-white hover:bg-white/[0.07] transition-colors"
+          className="w-full flex items-center justify-between px-4 py-4 text-[15px] text-white hover:bg-white/[0.07] transition-colors"
         >
           <span className="text-white/60">Currency</span>
           <div className="flex items-center gap-2">
@@ -354,6 +355,15 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Insights */}
+        <button
+          onClick={() => { setShowMoreDrawer(false); router.push("/insights"); }}
+          className="w-full flex items-center justify-between px-4 py-4 text-[15px] text-white hover:bg-white/[0.07] transition-colors"
+        >
+          <span className="text-white/60">Insights</span>
+          <Lightbulb size={14} className="text-white/40" />
+        </button>
+
         {/* Export CSV */}
         <button
           onClick={() => {
@@ -362,7 +372,7 @@ export default function Home() {
               : exportSubscriptionsCSV(subscriptions, currency);
             setShowMoreDrawer(false);
           }}
-          className="w-full flex items-center justify-between px-4 py-3.5 text-sm text-white hover:bg-white/[0.07] transition-colors"
+          className="w-full flex items-center justify-between px-4 py-4 text-[15px] text-white hover:bg-white/[0.07] transition-colors"
         >
           <span className="text-white/60">Export CSV</span>
           <Download size={14} className="text-white/40" />
@@ -370,7 +380,7 @@ export default function Home() {
         {/* Sign out */}
         <button
           onClick={() => { signOut(); setShowMoreDrawer(false); }}
-          className="w-full flex items-center justify-between px-4 py-3.5 text-sm text-danger hover:bg-white/[0.07] transition-colors"
+          className="w-full flex items-center justify-between px-4 py-4 text-[15px] text-danger hover:bg-white/[0.07] transition-colors"
         >
           <span>Sign out</span>
           <LogOut size={14} />
@@ -383,7 +393,7 @@ export default function Home() {
           {([
             { key: "expenses", label: "Expenses", icon: CreditCard },
             { key: "subscriptions", label: "Subscriptions", icon: RefreshCw },
-            { key: "insights", label: "Insights", icon: Lightbulb },
+            { key: "income", label: "Income", icon: Wallet },
           ] as { key: View; label: string; icon: React.ElementType }[]).map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -412,14 +422,14 @@ export default function Home() {
               <button
                 onClick={() => setShowMoreDrawer(true)}
                 aria-label="Menu"
-                className="sm:hidden w-8 h-8 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
+                className="sm:hidden w-10 h-10 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
               >
                 <MoreHorizontal size={14} />
               </button>
               <button
                 onClick={() => signOut()}
                 aria-label="Sign out"
-                className="hidden sm:flex w-8 h-8 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
+                className="hidden sm:flex w-10 h-10 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
               >
                 <LogOut size={14} />
               </button>
@@ -432,7 +442,7 @@ export default function Home() {
             <div ref={currencyRef} className="relative">
               <button
                 onClick={() => setShowCurrencyPicker((v) => !v)}
-                className="flex items-center gap-1 h-8 px-3 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors text-xs font-mono"
+                className="flex items-center gap-1 h-10 px-3 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors text-xs font-mono"
               >
                 {currency}
                 <ChevronDown size={11} />
@@ -448,7 +458,7 @@ export default function Home() {
                     : exportSubscriptionsCSV(subscriptions, currency)
                 }
                 aria-label="Export CSV"
-                className="flex items-center gap-1.5 h-8 px-3 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors text-xs font-mono"
+                className="flex items-center gap-1.5 h-10 px-3 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors text-xs font-mono"
               >
                 <Download size={12} />
                 CSV
@@ -456,17 +466,17 @@ export default function Home() {
               <button
                 onClick={prevMonth}
                 aria-label="Previous month"
-                className="w-8 h-8 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
               >
                 ‹
               </button>
-              <span className="font-sans text-sm text-white font-medium min-w-[72px] text-center">
+              <span className="font-sans text-[15px] text-white font-medium min-w-[72px] text-center">
                 {MONTH_NAMES[selectedMonth.month - 1]} {selectedMonth.year}
               </span>
               <button
                 onClick={nextMonth}
                 aria-label="Next month"
-                className="w-8 h-8 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
               >
                 ›
               </button>
@@ -474,7 +484,7 @@ export default function Home() {
           </div>
           {/* Row 3: View toggle (full width) — desktop only */}
           <div className="hidden sm:flex items-center h-10 p-0.5 rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md w-full">
-            {(["expenses", "subscriptions", "insights"] as View[]).map((v) => (
+            {(["expenses", "subscriptions", "income"] as View[]).map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
@@ -484,7 +494,7 @@ export default function Home() {
                     : "text-white/40 hover:text-white/80"
                 }`}
               >
-                {v === "expenses" ? "Expenses" : v === "subscriptions" ? "Subscriptions" : "Insights"}
+                {v === "expenses" ? "Expenses" : v === "subscriptions" ? "Subscriptions" : "Income"}
               </button>
             ))}
           </div>
@@ -541,15 +551,6 @@ export default function Home() {
               )}
             </div>
 
-            <IncomeSection
-              user={user}
-              selectedMonth={selectedMonth}
-              currency={currency}
-              monthlyIncome={monthlyIncome}
-              onMonthlyIncomeChange={saveMonthlyIncome}
-              expenses={expenses}
-              subscriptions={subscriptions}
-            />
           </>
         ) : view === "subscriptions" ? (
           <>
@@ -562,12 +563,14 @@ export default function Home() {
             />
           </>
         ) : (
-          <AnalyticsView
-            expenses={expenses}
-            subscriptions={subscriptions}
+          <IncomeSection
+            user={user}
             selectedMonth={selectedMonth}
             currency={currency}
             monthlyIncome={monthlyIncome}
+            onMonthlyIncomeChange={saveMonthlyIncome}
+            expenses={expenses}
+            subscriptions={subscriptions}
           />
         )}
       </div>

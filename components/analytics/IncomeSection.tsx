@@ -42,6 +42,7 @@ const IncomeSection = memo(function IncomeSection({
   const [newAmount, setNewAmount] = useState("");
   const [newDate, setNewDate] = useState(todayISO());
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [swipedIncomeId, setSwipedIncomeId] = useState<string | null>(null);
   const baselineRef = useRef<HTMLInputElement>(null);
@@ -79,7 +80,9 @@ const IncomeSection = memo(function IncomeSection({
     try {
       const data = await getIncomeByMonth(selectedMonth.year, selectedMonth.month);
       setIncomeEntries(data);
-    } catch { /* ignore */ } finally {
+    } catch (err) {
+      console.error("Failed to fetch income entries:", err);
+    } finally {
       setLoadingEntries(false);
     }
   }, [selectedMonth]);
@@ -107,13 +110,16 @@ const IncomeSection = memo(function IncomeSection({
     const parsed = parseFloat(newAmount);
     if (isNaN(parsed) || parsed <= 0 || !newDate) return;
     setSaving(true);
+    setSaveError(null);
     try {
       await addIncome({ source: newSource, amount: parsed, date: newDate }, user.id);
       setNewAmount("");
       setNewDate(todayISO());
       setShowAddForm(false);
       fetchEntries();
-    } catch { /* ignore */ } finally {
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Failed to save");
+    } finally {
       setSaving(false);
     }
   }
@@ -188,7 +194,7 @@ const IncomeSection = memo(function IncomeSection({
 
       <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
         {editingBaseline ? (
-          <div className="px-4 py-3.5 flex items-center gap-3 w-full">
+          <div className="px-4 py-4 flex items-center gap-3 w-full">
             <span className="font-mono text-xs text-muted flex-shrink-0">{currency}</span>
             <input
               ref={baselineRef}
@@ -199,29 +205,49 @@ const IncomeSection = memo(function IncomeSection({
               placeholder="Monthly income"
               className="flex-1 bg-transparent text-white text-base outline-none placeholder:text-muted [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
-            <button onClick={saveBaseline} aria-label="Save income" className="w-7 h-7 flex items-center justify-center rounded-lg bg-accent text-[#163300] flex-shrink-0">
+            <button onClick={saveBaseline} aria-label="Save income" className="w-9 h-9 flex items-center justify-center rounded-lg bg-accent text-[#163300] flex-shrink-0">
               <Check size={13} />
             </button>
-            <button onClick={() => setEditingBaseline(false)} aria-label="Cancel" className="w-7 h-7 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0">
+            <button onClick={() => setEditingBaseline(false)} aria-label="Cancel" className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0">
               <X size={13} />
             </button>
           </div>
         ) : monthlyIncome ? (
-          <div className="px-4 py-3.5 flex items-center justify-between w-full">
+          <div className="px-4 py-4 flex items-center justify-between w-full">
             <div className="flex flex-col gap-0.5">
               <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold">Monthly Income</span>
               <span className="font-mono text-base text-white font-semibold">
-                {formatAmount(monthlyIncome, currency)} <span className="text-muted text-xs font-normal">{currency}/mo</span>
+                {formatAmount(entriesTotal > 0 ? totalIncome : monthlyIncome, currency)}
+                <span className="text-muted text-xs font-normal ml-1">{currency}</span>
               </span>
+              {entriesTotal > 0 && (
+                <span className="font-mono text-xs text-muted">
+                  {formatAmount(monthlyIncome, currency)} base + {formatAmount(entriesTotal, currency)} one-off
+                </span>
+              )}
             </div>
             <button onClick={openBaselineEdit} aria-label="Edit monthly income" className="text-muted hover:text-white transition-colors">
               <Pencil size={12} />
             </button>
           </div>
+        ) : entriesTotal > 0 ? (
+          <div className="px-4 py-4 flex items-center justify-between w-full">
+            <div className="flex flex-col gap-0.5">
+              <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold">Income this month</span>
+              <span className="font-mono text-base text-white font-semibold">
+                {formatAmount(entriesTotal, currency)}
+                <span className="text-muted text-xs font-normal ml-1">{currency}</span>
+              </span>
+              <span className="font-mono text-xs text-muted">From one-off entries</span>
+            </div>
+            <button onClick={openBaselineEdit} aria-label="Set monthly income baseline" className="text-muted hover:text-white transition-colors text-xs font-mono">
+              + baseline
+            </button>
+          </div>
         ) : (
           <button
             onClick={openBaselineEdit}
-            className="w-full text-left px-4 py-3.5 text-sm text-muted hover:text-white transition-colors border border-dashed border-white/20 rounded-xl"
+            className="w-full text-left px-4 py-4 text-sm text-muted hover:text-white transition-colors border border-dashed border-white/20 rounded-xl"
           >
             + Set monthly income baseline
           </button>
@@ -236,7 +262,7 @@ const IncomeSection = memo(function IncomeSection({
               onClick={() => setShowAddForm((v) => !v)}
               aria-label="Add income entry"
               aria-expanded={showAddForm}
-              className="w-6 h-6 flex items-center justify-center rounded-full bg-accent text-[#163300]"
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-accent text-[#163300]"
             >
               <Plus size={12} />
             </button>
@@ -248,7 +274,7 @@ const IncomeSection = memo(function IncomeSection({
                 <select
                   value={newSource}
                   onChange={(e) => setNewSource(e.target.value)}
-                  className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-9 text-sm text-white outline-none focus:border-white/30 appearance-none cursor-pointer"
+                  className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-[15px] text-white outline-none focus:border-white/30 appearance-none cursor-pointer"
                 >
                   {INCOME_SOURCES.map((s) => (
                     <option key={s} value={s} className="bg-[#0a120a]">{s}</option>
@@ -261,7 +287,7 @@ const IncomeSection = memo(function IncomeSection({
                   onChange={(e) => setNewAmount(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") handleAddEntry(); if (e.key === "Escape") setShowAddForm(false); }}
                   placeholder="Amount"
-                  className="w-28 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-9 text-sm text-white outline-none focus:border-white/30 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  className="w-28 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-[15px] text-white outline-none focus:border-white/30 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
               </div>
               <div className="flex gap-2">
@@ -269,24 +295,27 @@ const IncomeSection = memo(function IncomeSection({
                   type="date"
                   value={newDate}
                   onChange={(e) => setNewDate(e.target.value)}
-                  className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-9 text-sm text-white outline-none focus:border-white/30 [color-scheme:dark]"
+                  className="flex-1 bg-white/[0.07] border border-white/[0.1] rounded-lg px-3 h-11 text-[15px] text-white outline-none focus:border-white/30 [color-scheme:dark]"
                 />
                 <button
                   onClick={handleAddEntry}
                   disabled={saving}
                   aria-label="Save income entry"
-                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-accent text-[#163300] disabled:opacity-50 flex-shrink-0"
+                  className="w-11 h-11 flex items-center justify-center rounded-lg bg-accent text-[#163300] disabled:opacity-50 flex-shrink-0"
                 >
                   <Check size={15} />
                 </button>
                 <button
-                  onClick={() => setShowAddForm(false)}
+                  onClick={() => { setShowAddForm(false); setSaveError(null); }}
                   aria-label="Cancel"
-                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0"
+                  className="w-11 h-11 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0"
                 >
                   <X size={15} />
                 </button>
               </div>
+              {saveError && (
+                <p className="font-mono text-xs text-danger">{saveError}</p>
+              )}
             </div>
           )}
 
@@ -325,7 +354,7 @@ const IncomeSection = memo(function IncomeSection({
                       style={{ transform: isSwiped ? "translateX(-56px)" : "translateX(0)" }}
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="font-sans text-sm text-white truncate">{entry.source}</p>
+                        <p className="font-sans text-[15px] text-white truncate">{entry.source}</p>
                         <p className="font-mono text-xs text-muted">{entry.date}</p>
                       </div>
                       <span className="font-mono text-sm text-accent font-semibold flex-shrink-0">

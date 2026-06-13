@@ -71,7 +71,7 @@ export default function InstallPrompt() {
         {!isIOS && (
           <button
             onClick={install}
-            className="flex-shrink-0 h-8 px-4 rounded-full bg-accent text-[#163300] text-xs font-semibold hover:bg-accent/90 transition-colors"
+            className="flex-shrink-0 h-11 px-5 rounded-full bg-accent text-[#163300] text-sm font-semibold hover:bg-accent/90 transition-colors"
           >
             Install
           </button>
@@ -80,7 +80,7 @@ export default function InstallPrompt() {
         {/* Dismiss */}
         <button
           onClick={dismiss}
-          className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full bg-white/[0.07] border border-white/[0.08] text-white/30 hover:text-white/70 transition-colors"
+          className="flex-shrink-0 w-11 h-11 flex items-center justify-center rounded-full bg-white/[0.07] border border-white/[0.08] text-white/30 hover:text-white/70 transition-colors"
         >
           <X size={12} />
         </button>

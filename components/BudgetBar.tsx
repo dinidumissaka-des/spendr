@@ -43,7 +43,7 @@ const BudgetBar = memo(function BudgetBar({ spent, currency, budget, onBudgetSav
       <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
         <button
           onClick={openEdit}
-          className="w-full text-left px-4 py-3.5 text-sm text-muted hover:text-white transition-colors border border-dashed border-white/20 rounded-xl"
+          className="w-full text-left px-4 py-4 text-sm text-muted hover:text-white transition-colors border border-dashed border-white/20 rounded-xl"
         >
           + Set a monthly budget
         </button>
@@ -54,7 +54,7 @@ const BudgetBar = memo(function BudgetBar({ spent, currency, budget, onBudgetSav
   if (editing) {
     return (
       <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
-      <div className="px-4 py-3.5 flex items-center gap-3 w-full">
+      <div className="px-4 py-4 flex items-center gap-3 w-full">
         <span className="font-mono text-xs text-muted flex-shrink-0">{currency}</span>
         <input
           ref={inputRef}
@@ -65,10 +65,10 @@ const BudgetBar = memo(function BudgetBar({ spent, currency, budget, onBudgetSav
           placeholder="0.00"
           className="flex-1 bg-transparent text-white text-base outline-none placeholder:text-muted [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
-        <button onClick={save} aria-label="Save budget" className="w-7 h-7 flex items-center justify-center rounded-lg bg-accent text-[#163300] flex-shrink-0">
+        <button onClick={save} aria-label="Save budget" className="w-11 h-11 flex items-center justify-center rounded-lg bg-accent text-[#163300] flex-shrink-0">
           <Check size={13} />
         </button>
-        <button onClick={cancel} aria-label="Cancel" className="w-7 h-7 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0">
+        <button onClick={cancel} aria-label="Cancel" className="w-11 h-11 flex items-center justify-center rounded-lg border border-white/[0.1] text-muted hover:text-white flex-shrink-0">
           <X size={13} />
         </button>
       </div>
@@ -82,7 +82,7 @@ const BudgetBar = memo(function BudgetBar({ spent, currency, budget, onBudgetSav
 
   return (
     <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
-    <div className="px-4 py-3.5 flex flex-col gap-3 w-full">
+    <div className="px-4 py-4 flex flex-col gap-3 w-full">
       <div className="flex items-center justify-between">
         <span className="font-sans text-xs text-muted uppercase tracking-widest font-semibold">Monthly Budget</span>
         <button onClick={openEdit} aria-label="Edit budget" className="text-muted hover:text-white transition-colors">
