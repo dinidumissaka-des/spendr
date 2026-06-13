@@ -5,8 +5,6 @@ import { Plus, Loader2 } from "lucide-react";
 import { addExpense } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import DatePickerDrawer from "@/components/expense/DatePickerDrawer";
-import CategoryPicker from "@/components/expense/CategoryPicker";
 import GlassSurface from "@/components/GlassSurface";
 import { CATEGORY_COLORS } from "@/lib/categories";
 
@@ -16,6 +14,15 @@ interface Props {
   userId: string;
   currency: string;
   onExpenseAdded: () => void;
+}
+
+function formatDateLabel(iso: string) {
+  const today = new Date().toISOString().split("T")[0];
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+  if (iso === today) return "Today";
+  if (iso === yesterday) return "Yesterday";
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("en", { month: "short", day: "numeric" });
 }
 
 export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Props) {
@@ -29,8 +36,6 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const amountRef = useRef<HTMLInputElement>(null);
-  const [showDateDrawer, setShowDateDrawer] = useState(false);
-  const [showCategoryDrawer, setShowCategoryDrawer] = useState(false);
 
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value.replace(/,/g, "");
@@ -105,74 +110,57 @@ export default function AddExpenseForm({ userId, currency, onExpenseAdded }: Pro
       </div>
 
       {/* Description */}
-      <div className="flex flex-col gap-2">
-        <Input
-          type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && amountRef.current?.focus()}
-          placeholder="Lunch at Nando's"
-        />
-      </div>
+      <Input
+        type="text"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && amountRef.current?.focus()}
+        placeholder="Lunch at Nando's"
+      />
 
-      {/* Category + Date row */}
+      {/* Category + Date row — native pickers overlaid */}
       <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={() => { setShowCategoryDrawer((v) => !v); setShowDateDrawer(false); }}
-          className={`h-[52px] flex items-center justify-center px-4 rounded-full border backdrop-blur-md text-sm text-white transition-colors ${
-            showCategoryDrawer
-              ? "border-white/25 bg-white/10"
-              : "border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10"
-          }`}
-        >
-          <span className="font-medium truncate">{isCustom ? (customCategory.trim() || "Custom") : category}</span>
-        </button>
+        {/* Category */}
+        <div className="relative h-[52px] flex items-center justify-center px-4 rounded-full border border-white/10 bg-white/5 cursor-pointer overflow-hidden">
+          <span className="font-medium text-sm text-white truncate pointer-events-none">
+            {isCustom ? (customCategory.trim() || "Custom") : category}
+          </span>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            aria-label="Category"
+          >
+            {PRESET_CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+            <option value="__custom__">Custom…</option>
+          </select>
+        </div>
 
-        <button
-          type="button"
-          onClick={() => { setShowDateDrawer((v) => !v); setShowCategoryDrawer(false); }}
-          className={`h-[52px] flex items-center justify-center px-4 rounded-full border backdrop-blur-md text-sm text-white transition-colors ${
-            showDateDrawer
-              ? "border-white/25 bg-white/10"
-              : "border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10"
-          }`}
-        >
-          <span className="font-medium">{date}</span>
-        </button>
-      </div>
-
-      {showCategoryDrawer && (
-        <CategoryPicker
-          open={showCategoryDrawer}
-          selected={category}
-          isCustom={isCustom}
-          onSelect={(cat) => {
-            setCategory(cat);
-            setShowCategoryDrawer(false);
-          }}
-        />
-      )}
-
-      {showDateDrawer && (
-        <DatePickerDrawer
-          open={showDateDrawer}
-          value={date}
-          onChange={setDate}
-          onClose={() => setShowDateDrawer(false)}
-        />
-      )}
-
-      {isCustom && (
-        <div className="flex flex-col gap-2">
-          <Input
-            type="text"
-            value={customCategory}
-            onChange={(e) => setCustomCategory(e.target.value)}
-            placeholder="Enter category name"
-            autoFocus
+        {/* Date */}
+        <div className="relative h-[52px] flex items-center justify-center px-4 rounded-full border border-white/10 bg-white/5 cursor-pointer overflow-hidden">
+          <span className="font-medium text-sm text-white pointer-events-none">
+            {formatDateLabel(date)}
+          </span>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => e.target.value && setDate(e.target.value)}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            aria-label="Date"
           />
         </div>
+      </div>
+
+      {isCustom && (
+        <Input
+          type="text"
+          value={customCategory}
+          onChange={(e) => setCustomCategory(e.target.value)}
+          placeholder="Enter category name"
+          autoFocus
+        />
       )}
 
       {error && <p className="text-danger text-sm">{error}</p>}

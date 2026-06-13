@@ -6,7 +6,6 @@ import { addSubscription, deleteSubscription, updateSubscription } from "@/lib/s
 import { formatAmount } from "@/lib/currencies";
 import { CATEGORY_COLORS } from "@/lib/categories";
 import GlassSurface from "@/components/GlassSurface";
-import CategoryPicker from "@/components/expense/CategoryPicker";
 import type { Subscription, NewSubscription } from "@/types";
 
 const PRESET_CATEGORIES = Object.keys(CATEGORY_COLORS);
@@ -26,8 +25,6 @@ interface EditState {
 
 export default function SubscriptionList({ subscriptions, userId, currency, onChanged }: Props) {
   const [showAdd, setShowAdd] = useState(false);
-  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
-  const [editCategoryPicker, setEditCategoryPicker] = useState<string | null>(null);
 
   const [newName, setNewName] = useState("");
   const [newAmount, setNewAmount] = useState("");
@@ -140,13 +137,19 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
                       />
                     </div>
                     <div className="flex gap-2 items-center">
-                      <button
-                        type="button"
-                        onClick={() => setEditCategoryPicker(sub.id)}
-                        className="flex-1 h-11 flex items-center px-3 rounded-lg border border-white/[0.1] bg-white/[0.07] text-[15px] text-white text-left"
-                      >
-                        {editState.category}
-                      </button>
+                      <div className="relative flex-1 h-11 flex items-center px-3 rounded-lg border border-white/[0.1] bg-white/[0.07] cursor-pointer overflow-hidden">
+                        <span className="text-[15px] text-white pointer-events-none">{editState.category}</span>
+                        <select
+                          value={editState.category}
+                          onChange={(e) => setEditState({ ...editState, category: e.target.value })}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          aria-label="Category"
+                        >
+                          {PRESET_CATEGORIES.map((cat) => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
+                        </select>
+                      </div>
                       <button onClick={() => handleSave(sub.id)} disabled={saving} aria-label="Save changes"
                         className="w-11 h-11 flex items-center justify-center rounded-lg bg-accent text-[#163300] hover:bg-accent/85 disabled:opacity-50 flex-shrink-0">
                         <Check size={15} />
@@ -156,14 +159,6 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
                         <X size={15} />
                       </button>
                     </div>
-                    {editCategoryPicker === sub.id && (
-                      <CategoryPicker
-                        open={true}
-                        selected={editState.category}
-                        isCustom={false}
-                        onSelect={(cat) => { setEditState({ ...editState, category: cat }); setEditCategoryPicker(null); }}
-                      />
-                    )}
                   </div>
                 );
               }
@@ -248,23 +243,19 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
               placeholder="Amount"
               min="0.01" step="0.01"
             />
-            <button
-              type="button"
-              onClick={() => setShowCategoryPicker((v) => !v)}
-              className={`h-10 flex items-center px-3 rounded-full border backdrop-blur-md text-sm text-white transition-colors ${
-                showCategoryPicker ? "border-white/25 bg-white/10" : "border-white/10 bg-white/5 hover:border-white/25"
-              }`}
-            >
-              {newCategory}
-            </button>
-            {showCategoryPicker && (
-              <CategoryPicker
-                open={showCategoryPicker}
-                selected={newCategory}
-                isCustom={false}
-                onSelect={(cat) => { setNewCategory(cat); setShowCategoryPicker(false); }}
-              />
-            )}
+            <div className="relative h-10 flex items-center px-3 rounded-full border border-white/10 bg-white/5 cursor-pointer overflow-hidden">
+              <span className="text-sm text-white pointer-events-none">{newCategory}</span>
+              <select
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                aria-label="Category"
+              >
+                {PRESET_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
             <div className="flex gap-2">
               <button
                 onClick={handleAdd}
