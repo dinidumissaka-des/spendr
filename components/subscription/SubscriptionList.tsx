@@ -6,6 +6,7 @@ import { addSubscription, deleteSubscription, updateSubscription } from "@/lib/s
 import { formatAmount } from "@/lib/currencies";
 import { CATEGORY_COLORS } from "@/lib/categories";
 import GlassSurface from "@/components/GlassSurface";
+import { usePrivacy } from "@/components/PrivacyContext";
 import BottomDrawer from "@/components/BottomDrawer";
 import { CategoryList } from "@/components/ui/DrawerPickers";
 import type { Subscription, NewSubscription } from "@/types";
@@ -26,6 +27,7 @@ interface EditState {
 }
 
 export default function SubscriptionList({ subscriptions, userId, currency, onChanged }: Props) {
+  const { mask } = usePrivacy();
   const [showAdd, setShowAdd] = useState(false);
   const [showAddCatDrawer, setShowAddCatDrawer] = useState(false);
   const [showEditCatDrawer, setShowEditCatDrawer] = useState(false);
@@ -116,7 +118,7 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
         <GlassSurface borderRadius={28} backgroundOpacity={0.07}>
           <div className="px-5 py-4 flex items-center justify-between w-full">
             <span className="font-sans text-xs text-muted uppercase tracking-widest font-semibold">Monthly Recurring</span>
-            <span className="font-mono text-lg font-bold text-white">{formatAmount(monthlyTotal, currency)}</span>
+            <span className="font-mono text-lg font-bold text-white">{mask(formatAmount(monthlyTotal, currency))}</span>
           </div>
           <div className="w-full divide-y divide-white/10 border-t border-white/10">
             {subscriptions.map((sub) => {
@@ -202,7 +204,7 @@ export default function SubscriptionList({ subscriptions, userId, currency, onCh
                       </span>
                     </div>
                     <span className="font-mono text-sm text-white flex-shrink-0">
-                      {formatAmount(Number(sub.amount), currency)}<span className="text-muted text-xs">/mo</span>
+                      {mask(formatAmount(Number(sub.amount), currency))}<span className="text-muted text-xs">/mo</span>
                     </span>
                     {/* Hover actions (desktop) */}
                     <div className="hidden sm:flex gap-1 overflow-hidden w-0 group-hover:w-[60px] transition-all duration-200 flex-shrink-0">

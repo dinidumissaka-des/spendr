@@ -4,6 +4,7 @@ import { memo } from "react";
 import type { Expense } from "@/types";
 import { formatAmount } from "@/lib/currencies";
 import GlassSurface from "@/components/GlassSurface";
+import { usePrivacy } from "@/components/PrivacyContext";
 
 interface Props {
   expenses: Expense[];
@@ -22,6 +23,7 @@ function daysElapsedInMonth(year: number, month: number, isCurrentMonth: boolean
 }
 
 const StatsBar = memo(function StatsBar({ expenses, selectedMonth, currency, subscriptionsTotal = 0 }: Props) {
+  const { mask } = usePrivacy();
   const today = todayISO();
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
@@ -44,7 +46,7 @@ const StatsBar = memo(function StatsBar({ expenses, selectedMonth, currency, sub
           {isCurrentMonth ? "This Month" : "Month Total"}
         </span>
         <span className="font-mono text-5xl font-bold text-white leading-tight">
-          {formatAmount(monthTotal, currency)}
+          {mask(formatAmount(monthTotal, currency))}
         </span>
       </div>
 
@@ -56,7 +58,7 @@ const StatsBar = memo(function StatsBar({ expenses, selectedMonth, currency, sub
               Today
             </span>
             <span className="font-mono text-2xl font-bold text-white leading-tight">
-              {formatAmount(todayTotal, currency)}
+              {mask(formatAmount(todayTotal, currency))}
             </span>
           </div>
           <div className="px-5 py-4 flex flex-col gap-1">
@@ -64,7 +66,7 @@ const StatsBar = memo(function StatsBar({ expenses, selectedMonth, currency, sub
               Avg/Day
             </span>
             <span className="font-mono text-2xl font-bold text-white leading-tight">
-              {formatAmount(avgPerDay, currency)}
+              {mask(formatAmount(avgPerDay, currency))}
             </span>
           </div>
         </div>

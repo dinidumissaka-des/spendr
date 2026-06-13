@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import "./globals.css";
 import InstallPrompt from "@/components/InstallPrompt";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import ClientProviders from "@/components/ClientProviders";
 
 const LightRays = dynamic(() => import("@/components/background/LightRays"), { ssr: false });
 
@@ -67,9 +68,11 @@ export default function RootLayout({
             saturation={0.9}
           />
         </div>
-        {children}
-        <InstallPrompt />
-        <ServiceWorkerRegistration />
+        <ClientProviders>
+          {children}
+          <InstallPrompt />
+          <ServiceWorkerRegistration />
+        </ClientProviders>
       </body>
     </html>
   );

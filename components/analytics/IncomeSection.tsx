@@ -7,6 +7,7 @@ import type { Expense, Subscription, Income } from "@/types";
 import { getIncomeByMonth, addIncome, deleteIncome, upsertUserSettings } from "@/lib/supabase";
 import { formatAmount } from "@/lib/currencies";
 import GlassSurface from "@/components/GlassSurface";
+import { usePrivacy } from "@/components/PrivacyContext";
 import BottomDrawer from "@/components/BottomDrawer";
 import { CalendarPicker, SourceList } from "@/components/ui/DrawerPickers";
 
@@ -24,6 +25,7 @@ interface Props {
   onMonthlyIncomeChange: (v: number | null) => void;
   expenses: Expense[];
   subscriptions: Subscription[];
+  onTotalChange?: (total: number) => void;
 }
 
 const IncomeSection = memo(function IncomeSection({
@@ -34,6 +36,7 @@ const IncomeSection = memo(function IncomeSection({
   onMonthlyIncomeChange,
   expenses,
   subscriptions,
+  onTotalChange,
 }: Props) {
   const [incomeEntries, setIncomeEntries] = useState<Income[]>([]);
   const [loadingEntries, setLoadingEntries] = useState(false);
@@ -142,7 +145,11 @@ const IncomeSection = memo(function IncomeSection({
     () => incomeEntries.reduce((s, e) => s + Number(e.amount), 0),
     [incomeEntries],
   );
+  const { mask } = usePrivacy();
   const totalIncome = (monthlyIncome ?? 0) + entriesTotal;
+
+  useEffect(() => { onTotalChange?.(totalIncome); }, [totalIncome, onTotalChange]);
+
   const totalSpent = expenses.reduce((s, e) => s + Number(e.amount), 0)
     + subscriptions.reduce((s, s2) => s + Number(s2.amount), 0);
   const saved = totalIncome - totalSpent;
@@ -174,11 +181,11 @@ const IncomeSection = memo(function IncomeSection({
             </div>
             <div className="flex items-end justify-between">
               <span className={`font-mono text-2xl font-bold ${saved >= 0 ? "text-white" : "text-danger"}`}>
-                {saved >= 0 ? "" : "-"}{formatAmount(Math.abs(saved), currency)}
+                {saved >= 0 ? "" : "-"}{mask(formatAmount(Math.abs(saved), currency))}
                 <span className="font-mono text-xs text-muted ml-1">{currency}</span>
               </span>
               <span className="font-mono text-xs text-muted">
-                of {formatAmount(totalIncome, currency)} income
+                of {mask(formatAmount(totalIncome, currency))} income
               </span>
             </div>
             {savingsRate !== null && (
@@ -218,12 +225,12 @@ const IncomeSection = memo(function IncomeSection({
             <div className="flex flex-col gap-0.5">
               <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold">Monthly Income</span>
               <span className="font-mono text-base text-white font-semibold">
-                {formatAmount(entriesTotal > 0 ? totalIncome : monthlyIncome, currency)}
+                {mask(formatAmount(entriesTotal > 0 ? totalIncome : monthlyIncome, currency))}
                 <span className="text-muted text-xs font-normal ml-1">{currency}</span>
               </span>
               {entriesTotal > 0 && (
                 <span className="font-mono text-xs text-muted">
-                  {formatAmount(monthlyIncome, currency)} base + {formatAmount(entriesTotal, currency)} one-off
+                  {mask(formatAmount(monthlyIncome, currency))} base + {mask(formatAmount(entriesTotal, currency))} one-off
                 </span>
               )}
             </div>
@@ -236,7 +243,7 @@ const IncomeSection = memo(function IncomeSection({
             <div className="flex flex-col gap-0.5">
               <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold">Income this month</span>
               <span className="font-mono text-base text-white font-semibold">
-                {formatAmount(entriesTotal, currency)}
+                {mask(formatAmount(entriesTotal, currency))}
                 <span className="text-muted text-xs font-normal ml-1">{currency}</span>
               </span>
               <span className="font-mono text-xs text-muted">From one-off entries</span>
@@ -358,7 +365,7 @@ const IncomeSection = memo(function IncomeSection({
                         <p className="font-mono text-xs text-muted">{entry.date}</p>
                       </div>
                       <span className="font-mono text-sm text-accent font-semibold flex-shrink-0">
-                        +{formatAmount(Number(entry.amount), currency)}
+                        +{mask(formatAmount(Number(entry.amount), currency))}
                       </span>
                       <button
                         onClick={() => handleDeleteEntry(entry.id)}
@@ -376,7 +383,7 @@ const IncomeSection = memo(function IncomeSection({
                 <div className="flex items-center justify-between px-4 py-2.5 bg-white/[0.03]">
                   <span className="font-sans text-xs text-muted">One-off total</span>
                   <span className="font-mono text-xs text-accent font-semibold">
-                    +{formatAmount(entriesTotal, currency)} {currency}
+                    +{mask(formatAmount(entriesTotal, currency))} {currency}
                   </span>
                 </div>
               )}

@@ -6,6 +6,7 @@ import { deleteExpense, updateExpense } from "@/lib/supabase";
 import { formatAmount } from "@/lib/currencies";
 import { CATEGORY_COLORS } from "@/lib/categories";
 import GlassSurface from "@/components/GlassSurface";
+import { usePrivacy } from "@/components/PrivacyContext";
 import BottomDrawer from "@/components/BottomDrawer";
 import { CalendarPicker, CategoryList } from "@/components/ui/DrawerPickers";
 import type { Expense } from "@/types";
@@ -38,6 +39,7 @@ interface EditState {
 const SWIPE_THRESHOLD = 60;
 
 export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }: Props) {
+  const { mask } = usePrivacy();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [swipedId, setSwipedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -188,7 +190,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
               </span>
               <div className="flex-1 h-px bg-white/[0.05]" />
               <span className="font-mono text-xs text-muted whitespace-nowrap">
-                {currency} {formatAmount(dayTotal, currency)}
+                {currency} {mask(formatAmount(dayTotal, currency))}
               </span>
             </div>
 
@@ -302,7 +304,7 @@ export default function ExpenseList({ expenses, onDeleted, onUpdated, currency }
                       )}
 
                       <span className="font-mono text-sm text-white flex-shrink-0">
-                        {formatAmount(Number(expense.amount), currency)}
+                        {mask(formatAmount(Number(expense.amount), currency))}
                       </span>
 
                       {/* Desktop hover actions */}

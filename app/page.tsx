@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, ChevronDown, Download, MoreHorizontal } from "lucide-react";
-import { CreditCard, ArrowsClockwise, Wallet, Lightbulb } from "@phosphor-icons/react";
+import { CreditCard, ArrowsClockwise, Wallet, Lightbulb, Eye, EyeClosed } from "@phosphor-icons/react";
 import type { User } from "@supabase/supabase-js";
 import { getExpensesByMonth, getSubscriptions, onAuthStateChange, signOut, getUserSettings, upsertUserSettings } from "@/lib/supabase";
 import type { Expense, Subscription } from "@/types";
-import { CURRENCIES, DEFAULT_CURRENCY } from "@/lib/currencies";
+import { CURRENCIES, DEFAULT_CURRENCY, formatAmount } from "@/lib/currencies";
 import { exportExpensesCSV, exportSubscriptionsCSV } from "@/lib/export";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Ripple } from "@/components/ui/ripple";
@@ -23,6 +23,7 @@ import SubscriptionList from "@/components/subscription/SubscriptionList";
 import IncomeSection from "@/components/analytics/IncomeSection";
 import AnalyticsView from "@/components/analytics/AnalyticsView";
 import BottomDrawer from "@/components/BottomDrawer";
+import { usePrivacy } from "@/components/PrivacyContext";
 
 type Filter = "all" | "today" | "week";
 type View = "expenses" | "subscriptions" | "income" | "insights";
@@ -60,12 +61,14 @@ export default function Home() {
   const [currency, setCurrency] = useState<string>(DEFAULT_CURRENCY);
   const [budget, setBudget] = useState<number | null>(null);
   const [monthlyIncome, setMonthlyIncome] = useState<number | null>(null);
+  const [incomeTotalHero, setIncomeTotalHero] = useState(0);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [showMoreDrawer, setShowMoreDrawer] = useState(false);
   const [expandedSection, setExpandedSection] = useState<"month" | "currency" | null>(null);
   const [pickerYear, setPickerYear] = useState(now.getFullYear());
   const currencyRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const { privacyMode, togglePrivacy, mask } = usePrivacy();
 
   useEffect(() => {
     if (!showMoreDrawer) setExpandedSection(null);
@@ -436,6 +439,17 @@ export default function Home() {
             <Logo className="h-5 w-auto" />
             <div className="flex items-center gap-2">
               <button
+                onClick={togglePrivacy}
+                aria-label={privacyMode ? "Show amounts" : "Hide amounts"}
+                className={`w-10 h-10 flex items-center justify-center rounded-full border backdrop-blur-md transition-colors ${
+                  privacyMode
+                    ? "border-accent/40 bg-accent/10 text-accent"
+                    : "border-white/[0.1] bg-white/[0.07] text-white/40 hover:text-white/90 hover:border-white/[0.3]"
+                }`}
+              >
+                {privacyMode ? <EyeClosed size={16} /> : <Eye size={16} />}
+              </button>
+              <button
                 onClick={() => setShowMoreDrawer(true)}
                 aria-label="Menu"
                 className="sm:hidden w-10 h-10 flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] backdrop-blur-md text-white/40 hover:text-white/90 hover:border-white/[0.3] transition-colors"
@@ -517,8 +531,34 @@ export default function Home() {
         </div>
 
         {/* Stats */}
-        {view !== "insights" && (
+        {view === "expenses" && (
           <StatsBar expenses={expenses} selectedMonth={selectedMonth} currency={currency} subscriptionsTotal={subscriptionsTotal} />
+        )}
+        {view === "subscriptions" && (
+          <div className="flex flex-col gap-2">
+            <div className="px-1 pt-2 pb-5 flex flex-col gap-1">
+              <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold leading-none">Monthly Bills</span>
+              <span className="font-mono text-5xl font-bold text-white leading-tight">{mask(formatAmount(subscriptionsTotal, currency))}</span>
+            </div>
+            <GlassSurface borderRadius={28}>
+              <div className="w-full grid grid-cols-2 divide-x divide-white/[0.07]">
+                <div className="px-5 py-4 flex flex-col gap-1">
+                  <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold leading-none">Active</span>
+                  <span className="font-mono text-2xl font-bold text-white leading-tight">{privacyMode ? "•" : subscriptions.length}</span>
+                </div>
+                <div className="px-5 py-4 flex flex-col gap-1">
+                  <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold leading-none">Per Year</span>
+                  <span className="font-mono text-2xl font-bold text-white leading-tight">{mask(formatAmount(subscriptionsTotal * 12, currency))}</span>
+                </div>
+              </div>
+            </GlassSurface>
+          </div>
+        )}
+        {view === "income" && (
+          <div className="px-1 pt-2 pb-5 flex flex-col gap-1">
+            <span className="font-sans text-xs text-muted uppercase tracking-wider font-semibold leading-none">Monthly Income</span>
+            <span className="font-mono text-5xl font-bold text-white leading-tight">{mask(formatAmount(incomeTotalHero, currency))}</span>
+          </div>
         )}
 
         {view === "expenses" ? (
@@ -589,6 +629,7 @@ export default function Home() {
             onMonthlyIncomeChange={saveMonthlyIncome}
             expenses={expenses}
             subscriptions={subscriptions}
+            onTotalChange={setIncomeTotalHero}
           />
         ) : (
           <AnalyticsView

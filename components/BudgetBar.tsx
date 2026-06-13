@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, memo } from "react";
 import { Pencil, Check, X } from "lucide-react";
 import { formatAmount } from "@/lib/currencies";
 import GlassSurface from "@/components/GlassSurface";
+import { usePrivacy } from "@/components/PrivacyContext";
 
 interface Props {
   spent: number;
@@ -13,6 +14,7 @@ interface Props {
 }
 
 const BudgetBar = memo(function BudgetBar({ spent, currency, budget, onBudgetSave }: Props) {
+  const { mask } = usePrivacy();
   const [editing, setEditing] = useState(false);
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -99,13 +101,13 @@ const BudgetBar = memo(function BudgetBar({ spent, currency, budget, onBudgetSav
 
       <div className="flex items-center justify-between">
         <span className={`font-mono text-sm font-semibold ${over ? "text-danger" : "text-white"}`}>
-          {formatAmount(spent, currency)}
-          <span className="text-muted font-normal"> / {formatAmount(budget!, currency)}</span>
+          {mask(formatAmount(spent, currency))}
+          <span className="text-muted font-normal"> / {mask(formatAmount(budget!, currency))}</span>
         </span>
         <span className={`font-mono text-xs ${over ? "text-danger" : "text-muted"}`}>
           {over
-            ? `${formatAmount(spent - budget!, currency)} over`
-            : `${formatAmount(remaining, currency)} left`}
+            ? `${mask(formatAmount(spent - budget!, currency))} over`
+            : `${mask(formatAmount(remaining, currency))} left`}
         </span>
       </div>
     </div>
