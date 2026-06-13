@@ -388,7 +388,7 @@ export default function Home() {
       </BottomDrawer>
 
       {/* Bottom nav — mobile only */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}>
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 px-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.25rem)' }}>
         <div className="flex items-center h-16 p-1.5 rounded-3xl border border-white/[0.1] bg-black/40 backdrop-blur-xl">
           {([
             { key: "expenses", label: "Expenses", icon: CreditCard },
